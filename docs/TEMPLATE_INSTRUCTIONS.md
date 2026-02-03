@@ -314,7 +314,8 @@ your-project/
 │   └── settings.json       # Hooks configuration
 ├── .ralph/
 │   ├── state/              # Ralph autonomous state tracking
-│   └── active/             # Per-issue logs and feedback
+│   ├── active/             # Per-issue logs and feedback
+│   └── archived/           # Archived issue logs
 ├── thoughts/
 │   ├── research/           # Research output documents (empty)
 │   ├── plans/              # Implementation plans (empty)
@@ -326,7 +327,10 @@ your-project/
 │   │   └── claude.yml      # Claude Code PR review automation
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   └── CODEOWNERS
-├── ralph-autonomous.sh     # Autonomous loop script
+├── scripts/
+│   ├── ralph-autonomous.sh # Autonomous loop script
+│   ├── ralph_monitor.sh    # Real-time monitoring dashboard
+│   └── reset-ralph-state.sh # Reset Ralph state utility
 ├── .tmux.ralph.conf        # Monitoring dashboard config
 ├── README.md               # This file
 └── CLAUDE.md               # Claude Code instructions
@@ -732,7 +736,7 @@ Launch Ralph with a live monitoring dashboard:
 
 ```bash
 # Launch with live monitoring dashboard
-./ralph-autonomous.sh --monitor
+./scripts/ralph-autonomous.sh --monitor
 
 # The dashboard shows:
 # - Left pane: Ralph execution logs (research, planning, implementation)
@@ -743,13 +747,13 @@ Launch Ralph with a live monitoring dashboard:
 # - Ctrl+B then arrow keys: Switch between panes
 
 # Later, check on progress
-./ralph-autonomous.sh --status
+./scripts/ralph-autonomous.sh --status
 
 # Or reattach to see live dashboard
 tmux attach -t ralph-monitor-<session-id>
 
 # Preview before running
-./ralph-autonomous.sh --dry-run        # See what would happen without making changes
+./scripts/ralph-autonomous.sh --dry-run        # See what would happen without making changes
 ```
 
 ### How Ralph Works
@@ -776,7 +780,7 @@ Ralph only creates commits and PRs for implementations that pass validation. Fai
 If you need to start fresh or clear old test data, use the reset script:
 
 ```bash
-./reset-ralph-state.sh
+./scripts/reset-ralph-state.sh
 ```
 
 **What it resets:**

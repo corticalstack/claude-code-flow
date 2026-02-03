@@ -23,8 +23,8 @@ This project uses the **Claude Code Flow** template - a structured workflow for 
 
 **Autonomous (unattended):**
 ```bash
-/ralph                              # Process up to 10 issues automatically
-./ralph-autonomous.sh --monitor     # Launch with live dashboard
+/ralph                                   # Process up to 10 issues automatically
+./scripts/ralph-autonomous.sh --monitor  # Launch with live dashboard
 ```
 
 See [docs/TEMPLATE_INSTRUCTIONS.md](docs/TEMPLATE_INSTRUCTIONS.md) for complete documentation.
