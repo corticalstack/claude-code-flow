@@ -232,7 +232,7 @@ git push origin main
 # remote: error: GH006: Protected branch update failed
 ```
 
-Instead, all work must go through feature branches and pull requests (see [Feature Branch Workflow](../README.md#feature-branch-workflow)).
+Instead, all work must go through feature branches and pull requests (see [Feature Branch Workflow](#feature-branch-workflow) below).
 
 ### Automatic Reviewer Assignment
 
@@ -537,6 +537,214 @@ This creates a feedback loop where Claude Code improves over time - each PR revi
 
 ---
 
+## Command Reference
+
+The workflow provides these commands organized by phase:
+
+### Research Phase
+
+| Command | Purpose |
+|---------|---------|
+| `/research_requirements` | Research requirements and tech choices for new features |
+| `/research_codebase` | Document existing codebase patterns and architecture |
+
+### Planning Phase
+
+| Command | Purpose |
+|---------|---------|
+| `/create_plan` | Create detailed implementation plans with phased approach |
+| `/iterate_plan` | Update existing plans based on new requirements |
+
+### Implementation Phase
+
+| Command | Purpose |
+|---------|---------|
+| `/implement_plan` | Execute plans phase by phase with verification checkpoints |
+| `/validate_plan` | Validate implementation matches plan (quality gate before commit) |
+
+### Commit & PR Phase
+
+| Command | Purpose |
+|---------|---------|
+| `/commit` | Create git commits with user approval |
+| `/autonomous_commit` | Create commits without approval (for autonomous workflows) |
+| `/describe_pr` | Generate comprehensive PR descriptions from templates |
+
+### Autonomous Workflow
+
+| Command | Purpose |
+|---------|---------|
+| `/ralph` | Autonomous issue processing loop (Research → Plan → Implement → Validate → PR) |
+
+### Session Management
+
+| Command | Purpose |
+|---------|---------|
+| `/create_handoff` | Create handoff document for transferring work to another session |
+| `/resume_handoff` | Resume work from handoff document with context |
+
+**Typical workflow:**
+
+**Greenfield (new features):**
+```
+/research_requirements → /create_plan → /implement_plan → /validate_plan → /commit
+```
+
+**Brownfield (existing codebase):**
+```
+/research_codebase → /create_plan → /implement_plan → /validate_plan → /commit
+```
+
+See [CLAUDE.md](../CLAUDE.md) for workflow guidance and the main [README.md](../README.md) for quick reference.
+
+---
+
+## Feature Branch Workflow
+
+All development work should be done on feature branches. Here's the typical workflow:
+
+```bash
+# Create feature branch from issue
+git checkout -b feature/42-your-feature-name
+
+# Do your work using Claude Code commands
+/create_plan #42
+/implement_plan thoughts/plans/2026-02-03-gh-42-your-feature.md
+/validate_plan thoughts/plans/2026-02-03-gh-42-your-feature.md
+
+# Commit and create PR
+/commit
+git push -u origin feature/42-your-feature-name
+gh pr create --base main --draft
+/describe_pr
+```
+
+**Branch naming convention:**
+```
+feature/<issue-number>-<brief-description>
+```
+
+Examples:
+- `feature/42-add-authentication`
+- `feature/7-configurable-system-prompt`
+
+---
+
+## Directory Structure
+
+After creating a project from this template, you'll have this structure:
+
+```
+your-project/
+├── .claude/              # Commands, skills, hooks configuration
+├── .ralph/               # Autonomous workflow state
+├── thoughts/             # Research documents and implementation plans
+│   ├── research/         # Requirements and codebase research
+│   ├── plans/            # Implementation plans
+│   └── prs/              # PR descriptions
+├── docs/                 # Documentation
+├── src/                  # YOUR SOURCE CODE (add this)
+├── tests/                # YOUR TESTS (add this)
+└── [your project files]  # YOUR PROJECT STRUCTURE (add this)
+```
+
+**What's included:**
+- `.claude/` - Workflow commands and configuration
+- `.ralph/` - Autonomous workflow state tracking
+- `thoughts/` - Research and planning artifacts
+- `docs/` - Template documentation
+
+**What you add:**
+- Your source code (`src/` or your preferred structure)
+- Your tests (`tests/` or your preferred location)
+- Your dependencies (`pyproject.toml`, `package.json`, etc.)
+- Your build/run scripts
+
+---
+
+## Using @claude in Pull Requests
+
+After creating PRs, you can @mention Claude in PR comments for code reviews. Claude will respond using your Claude Code Max subscription.
+
+**Example interactions:**
+
+```
+@claude Review this PR for code quality and potential issues
+```
+
+```
+@claude What do you think about the architecture decisions?
+```
+
+```
+@claude Are there any edge cases we might have missed in the validation logic?
+```
+
+```
+@claude Suggest improvements to CLAUDE.md based on patterns you see
+```
+
+**What happens:**
+1. You add a comment mentioning @claude
+2. The GitHub Action triggers automatically (see [Setting Up Claude PR Reviews](#setting-up-claude-pr-reviews))
+3. Claude reviews your code and responds with feedback
+4. Claude may suggest updates to `CLAUDE.md` for future improvements
+
+This creates a feedback loop where Claude Code improves over time - each PR review can result in better instructions for future sessions.
+
+---
+
+## Ralph Autonomous Development
+
+For fully autonomous multi-issue processing, use the `/ralph` command or `ralph-autonomous.sh` shell script.
+
+### Using Ralph with Live Monitor
+
+Launch Ralph with a live monitoring dashboard:
+
+```bash
+# Launch with live monitoring dashboard
+./ralph-autonomous.sh --monitor
+
+# The dashboard shows:
+# - Left pane: Ralph execution logs (research, planning, implementation)
+# - Right pane: Live status, task queue, API limits, recent activity
+#
+# Controls:
+# - Ctrl+B then D: Detach (Ralph keeps running in background)
+# - Ctrl+B then arrow keys: Switch between panes
+
+# Later, check on progress
+./ralph-autonomous.sh --status
+
+# Or reattach to see live dashboard
+tmux attach -t ralph-monitor-<session-id>
+
+# Preview before running
+./ralph-autonomous.sh --dry-run        # See what would happen without making changes
+```
+
+### How Ralph Works
+
+Ralph automatically processes issues end-to-end:
+
+1. Selects highest priority open issue
+2. Creates research if missing (`/research_requirements`)
+3. Creates plan if missing (`/create_plan`)
+4. Implements the plan (`/implement_plan`)
+5. Validates implementation (`/validate_plan`)
+6. Creates PR if validation passes
+7. Moves to next issue
+
+**Prerequisites:**
+- GitHub labels must exist (see label setup in Branch Protection section)
+- Branch protection configured (prevents direct commits to main)
+
+**Quality Gate:**
+Ralph only creates commits and PRs for implementations that pass validation. Failed validations are flagged for human review rather than attempting automated fixes.
+
+---
+
 ## Next Steps
 
 After completing this setup:
@@ -546,4 +754,4 @@ After completing this setup:
 3. **Create your first issue** - Use GitHub issues to track work
 4. **Start the workflow** - Use `/research_requirements` or `/create_plan` to begin
 
-See the main [README.md](../README.md) for workflow documentation and command reference.
+See the main [README.md](../README.md) for workflow overview.
