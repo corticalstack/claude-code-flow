@@ -82,6 +82,8 @@ You should see output showing your account and token scopes including `repo`.
 
 The workflow hooks use Python tools like `ruff` for auto-formatting and linting. We recommend [UV](https://docs.astral.sh/uv/) - a fast, modern Python package manager written in Rust that's 10-100x faster than pip.
 
+> **Note:** This template includes a `.python-version` file (set to `3.12`) that UV and other Python version managers (pyenv, asdf) respect. UV will automatically use this Python version when creating virtual environments.
+
 #### 1. Check if UV is Installed
 
 ```bash
@@ -331,8 +333,14 @@ your-project/
 │   ├── ralph-autonomous.sh # Autonomous loop script
 │   ├── ralph_monitor.sh    # Real-time monitoring dashboard
 │   └── reset-ralph-state.sh # Reset Ralph state utility
+├── .tmux/
+│   └── scripts/
+│       └── ralph_runtime.sh # Tmux runtime helper for Ralph monitor
 ├── .tmux.ralph.conf        # Monitoring dashboard config
-├── README.md               # This file
+├── .python-version         # Python version (UV respects this)
+├── CONTRIBUTING.md         # Modify for your project's contribution guidelines
+├── LICENSE                 # Modify for your project's license
+├── README.md               # Replace with your project documentation
 └── CLAUDE.md               # Claude Code instructions
 ```
 
