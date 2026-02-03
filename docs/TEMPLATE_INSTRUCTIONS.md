@@ -4,6 +4,33 @@ This guide walks you through setting up a project created from the `claude-code-
 
 > **You are here because**: You clicked *Use this template* and created a new project. Now you need to configure it for development.
 
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+  - [GitHub CLI Setup](#github-cli-setup)
+  - [Python Environment Setup (UV)](#python-environment-setup-uv)
+- [Branch Protection Setup](#branch-protection-setup)
+  - [Why Protect Main?](#why-protect-main)
+  - [Check if Main Branch Exists](#check-if-main-branch-exists)
+  - [Configure Branch Protection Rules](#configure-branch-protection-rules)
+  - [Verify Branch Protection](#verify-branch-protection)
+  - [Working with Protected Main](#working-with-protected-main)
+  - [Automatic Reviewer Assignment](#automatic-reviewer-assignment)
+- [Workflow Setup Guide](#workflow-setup-guide)
+  - [Step 1: Verify Directory Structure](#step-1-verify-directory-structure)
+  - [Step 2: Git Configuration (Optional)](#step-2-git-configuration-optional)
+  - [Step 3: Configure Hooks](#step-3-configure-hooks)
+- [Important: Command Caching Behavior](#important-command-caching-behavior)
+- [Setting Up Claude PR Reviews](#setting-up-claude-pr-reviews)
+- [Command Reference](#command-reference)
+- [Feature Branch Workflow](#feature-branch-workflow)
+- [Directory Structure](#directory-structure)
+- [Using @claude in Pull Requests](#using-claude-in-pull-requests)
+- [Ralph Autonomous Development](#ralph-autonomous-development)
+- [Next Steps](#next-steps)
+
+---
+
 ## Prerequisites
 
 Before setting up the workflow, ensure you have:
@@ -121,13 +148,6 @@ source .venv/bin/activate
 ruff --version
 ```
 
-#### Why UV over pip/poetry?
-
-- **Speed**: 10-100x faster than pip, with aggressive caching
-- **Simplicity**: Drop-in replacement for pip (`uv pip install` works)
-- **All-in-one**: Manages Python versions, virtual environments, and dependencies
-- **Standards-based**: Uses `pyproject.toml`, compatible with existing tooling
-
 ---
 
 ## Branch Protection Setup
@@ -239,6 +259,8 @@ Instead, all work must go through feature branches and pull requests (see [Featu
 
 **Ensure all PRs have reviewers assigned automatically** using a CODEOWNERS file. This works for PRs created manually, by Claude Code, or through automation.
 
+> **Note:** For solo developers, CODEOWNERS is optional. If you're the only contributor and have `required_approving_review_count: 0` set in branch protection, you can skip this section. CODEOWNERS is primarily useful for teams or repositories that accept external contributions.
+
 #### Why Auto-assign Reviewers?
 
 - Ensures no PR is forgotten or left unreviewed
@@ -276,7 +298,9 @@ EOFINNER
 
 ---
 
-## Step-by-Step Setup Guide
+## Workflow Setup Guide
+
+This section guides you through configuring the Claude Code workflow for your project.
 
 ### Step 1: Verify Directory Structure
 
@@ -296,8 +320,10 @@ your-project/
 │   ├── plans/              # Implementation plans (empty)
 │   └── prs/                # PR descriptions (empty)
 ├── docs/                   # Workflow documentation
+│   └── TEMPLATE_INSTRUCTIONS.md
 ├── .github/
-│   ├── workflows/          # GitHub Actions (claude.yml)
+│   ├── workflows/          # GitHub Actions
+│   │   └── claude.yml      # Claude Code PR review automation
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   └── CODEOWNERS
 ├── ralph-autonomous.sh     # Autonomous loop script
@@ -314,7 +340,7 @@ your-project/
 
 ---
 
-## Step 2:  Git Configuration (Optional)
+### Step 2: Git Configuration (Optional)
 
 You can choose whether to track `thoughts/` in version control:
 
@@ -333,7 +359,7 @@ echo "thoughts/" >> .gitignore
 
 ---
 
-## Step 3: Configure Hooks
+### Step 3: Configure Hooks
 
 Claude Code hooks automate common tasks and protect sensitive files. The hooks configuration lives in `.claude/settings.json`.
 
@@ -644,6 +670,7 @@ your-project/
 │   ├── plans/            # Implementation plans
 │   └── prs/              # PR descriptions
 ├── docs/                 # Documentation
+│   └── TEMPLATE_INSTRUCTIONS.md
 ├── src/                  # YOUR SOURCE CODE (add this)
 ├── tests/                # YOUR TESTS (add this)
 └── [your project files]  # YOUR PROJECT STRUCTURE (add this)
@@ -743,6 +770,31 @@ Ralph automatically processes issues end-to-end:
 
 **Quality Gate:**
 Ralph only creates commits and PRs for implementations that pass validation. Failed validations are flagged for human review rather than attempting automated fixes.
+
+### Resetting Ralph State
+
+If you need to start fresh or clear old test data, use the reset script:
+
+```bash
+./reset-ralph-state.sh
+```
+
+**What it resets:**
+- Clears `.ralph/active/` (active issue logs)
+- Clears `.ralph/archived/` (archived issue logs)
+- Resets circuit breaker to CLOSED state
+- Resets all counters (iterations, successes, failures) to 0
+- Clears execution history
+- Resets rate limiting
+- Removes session file
+
+**When to use:**
+- Starting fresh with the template
+- After testing/development work
+- Recovering from corrupted state
+- Before sharing the template
+
+The script includes a confirmation prompt and shows exactly what will be reset.
 
 ---
 
