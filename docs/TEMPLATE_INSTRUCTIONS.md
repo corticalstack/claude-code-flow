@@ -2,7 +2,7 @@
 
 This guide walks you through setting up a project created from the `claude-code-flow` template.
 
-> **You are here because**: You clicked "Use this template" and created a new project. Now you need to configure it for development.
+> **You are here because**: You clicked *Use this template* and created a new project. Now you need to configure it for development.
 
 ## Prerequisites
 
@@ -11,7 +11,6 @@ Before setting up the workflow, ensure you have:
 1. **Git repository** - New or existing, with a GitHub remote configured
 2. **GitHub CLI** - See [GitHub CLI Setup](#github-cli-setup) below
 3. **Claude Code** - Installed and configured
-4. **Python environment** - See [Python Environment Setup (UV)](#python-environment-setup-uv) below (required for auto-formatting hooks)
 
 ### GitHub CLI Setup
 
@@ -52,7 +51,9 @@ You should see output showing your account and token scopes including `repo`.
 
 ### Python Environment Setup (UV)
 
-The workflow hooks use Python tools like `black` for auto-formatting. We recommend [UV](https://docs.astral.sh/uv/) - a fast, modern Python package manager written in Rust that's 10-100x faster than pip.
+> **Note:** This section is specific to Python projects and serves as an example of setting up a language environment and package manager. If you're building with a different language, you'd follow similar steps with your language's tooling (e.g., `npm`/`pnpm` for JavaScript/TypeScript, `cargo` for Rust, `go mod` for Go). **Skip this section if you're not using Python.**
+
+The workflow hooks use Python tools like `ruff` for auto-formatting and linting. We recommend [UV](https://docs.astral.sh/uv/) - a fast, modern Python package manager written in Rust that's 10-100x faster than pip.
 
 #### 1. Check if UV is Installed
 
@@ -85,19 +86,19 @@ uv init
 uv sync
 ```
 
-#### 4. Add Black for Auto-Formatting
+#### 4. Add Ruff for Auto-Formatting and Linting
 
-Install the Python formatter used by the auto-format hooks:
+Install the Python formatter and linter used by the auto-format hooks:
 
 ```bash
-# Add black as a dev dependency
-uv add black --dev
+# Add ruff as a dev dependency
+uv add ruff --dev
 ```
 
-#### 5. Verify Black is Installed
+#### 5. Verify Ruff is Installed
 
 ```bash
-uv run black --version
+uv run ruff --version
 ```
 
 #### Using UV
@@ -106,7 +107,7 @@ UV automatically manages virtual environments. You don't need to activate them m
 
 ```bash
 # Run any command in the virtual environment
-uv run black myfile.py
+uv run ruff format myfile.py
 uv run python script.py
 
 # Add more packages
@@ -117,7 +118,7 @@ uv add pytest --dev
 If you prefer activating the environment manually (traditional workflow):
 ```bash
 source .venv/bin/activate
-black --version
+ruff --version
 ```
 
 #### Why UV over pip/poetry?
@@ -341,7 +342,7 @@ Claude Code hooks automate common tasks and protect sensitive files. The hooks c
 | Hook Type | Trigger | Purpose |
 |-----------|---------|---------|
 | **PreToolUse** | Before Edit/Write | Blocks modifications to sensitive files (.env, credentials, secrets, .git/) |
-| **PostToolUse** | After Edit/Write | Auto-formats JS/TS files with Prettier, Python files with Black |
+| **PostToolUse** | After Edit/Write | Auto-formats JS/TS files with Prettier, Python files with Ruff |
 | **Notification** | When Claude needs input | Desktop notification (Linux `notify-send`) |
 
 ### Why These Hooks Matter
@@ -354,11 +355,11 @@ Claude Code hooks automate common tasks and protect sensitive files. The hooks c
 
 ### Prerequisites for Hooks
 
-The auto-format hooks require formatters to be installed. If you followed [Python Environment Setup (UV)](#python-environment-setup-uv), black is already installed.
+The auto-format hooks require formatters to be installed. If you followed [Python Environment Setup (UV)](#python-environment-setup-uv), ruff is already installed.
 
 ```bash
-# Python formatting (already done if you followed UV setup)
-uv add black --dev
+# Python formatting and linting (already done if you followed UV setup)
+uv add ruff --dev
 
 # JavaScript/TypeScript formatting (if needed)
 npm install --save-dev prettier
@@ -392,7 +393,7 @@ Create a file called test_format.py with this exact content:
 def ugly(x,y,z):return x+y+z
 ```
 
-**Expected result**: The file is created and automatically formatted by black:
+**Expected result**: The file is created and automatically formatted by ruff:
 ```python
 def ugly(x, y, z):
     return x + y + z
@@ -423,7 +424,7 @@ osascript -e 'display notification "Test" with title "Claude Code"'
 Edit `.claude/settings.json` to customize:
 
 - **Add file types**: Extend the PostToolUse patterns for other languages
-- **Change formatters**: Replace Prettier/Black with your preferred tools
+- **Change formatters**: Replace Prettier/Ruff with your preferred tools
 - **Adjust blocked files**: Modify the PreToolUse blocked list for your project
 - **Change notifications**: Replace with platform-specific command (see test examples above)
 

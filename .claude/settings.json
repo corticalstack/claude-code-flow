@@ -21,7 +21,7 @@
           },
           {
             "type": "command",
-            "command": "python3 -c \"import json, sys, subprocess; data=json.load(sys.stdin); path=data.get('tool_input',{}).get('file_path',''); subprocess.run(['uv','run','black',path], capture_output=True) if path.endswith('.py') else None\""
+            "command": "python3 -c \"import json, sys, subprocess; data=json.load(sys.stdin); path=data.get('tool_input',{}).get('file_path',''); subprocess.run(['uv','run','ruff','format',path], capture_output=True) if path.endswith('.py') else None\""
           }
         ]
       }
