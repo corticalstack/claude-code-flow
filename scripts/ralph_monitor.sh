@@ -206,7 +206,7 @@ display_dashboard() {
             echo -e "${YELLOW}│${NC} ${CYAN}Next steps:${NC}"
             echo -e "${YELLOW}│${NC}   • Remove 'ralph-exempt' label from issues you want Ralph to process"
             echo -e "${YELLOW}│${NC}   • Create new issues for Ralph to work on"
-            echo -e "${YELLOW}│${NC}   • If circuit breaker is open: ./ralph-autonomous.sh --reset-circuit"
+            echo -e "${YELLOW}│${NC}   • If circuit breaker is open: ./scripts/ralph-autonomous.sh --reset-circuit"
             echo -e "${YELLOW}│${NC}"
             echo -e "${YELLOW}└─────────────────────────────────────────────────────────────────────────┘${NC}"
             echo
