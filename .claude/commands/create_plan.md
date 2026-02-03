@@ -285,7 +285,7 @@ After structure approval:
 - [ ] Implementation complete
 - [ ] All tests pass: `uv run pytest tests/ -v`
 - [ ] Type checking passes (if applicable)
-- [ ] Linting passes: `uv run black --check .`
+- [ ] Linting passes: `uv run ruff format --check .`
 
 #### Manual Verification:
 - [ ] Feature works as expected when tested manually
