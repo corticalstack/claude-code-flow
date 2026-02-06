@@ -20,6 +20,13 @@ This guide walks you through setting up a project created from the `claude-code-
 - [Command Reference](#command-reference)
 - [Step-by-Step Development Workflow](#step-by-step-development-workflow)
 - [Ralph Autonomous Development](#ralph-autonomous-development)
+  - [How Ralph Works](#how-ralph-works)
+  - [How Ralph Prioritizes Issues](#how-ralph-prioritizes-issues)
+  - [Using Ralph with Live Monitor](#using-ralph-with-live-monitor)
+  - [Dry-Run Mode](#dry-run-mode)
+  - [Reset Commands](#reset-commands)
+  - [Dashboard Theme & Appearance](#dashboard-theme--appearance)
+  - [Why Custom Command Over Official Plugin?](#why-custom-command-over-official-plugin)
 - [Next Steps](#next-steps)
 
 ---
@@ -1124,73 +1131,123 @@ For fully autonomous multi-issue processing, use the `ralph-autonomous.sh` shell
 
 **About Ralph:** The [Ralph Wiggum technique](https://ghuntley.com/ralph/) is an AI development methodology created by Geoffrey Huntley that runs coding agents in a continuous loop until all tasks are complete. Named after the Simpsons character known for being simple but persistent.
 
-### Using Ralph with Live Monitor
-
-Launch Ralph with a live monitoring dashboard:
-
-```bash
-# Launch with live monitoring dashboard
-./scripts/ralph-autonomous.sh --monitor
-
-# The dashboard shows:
-# - Left pane: Ralph execution logs (research, planning, implementation)
-# - Right pane: Live status, task queue, API limits, recent activity
-#
-# Controls:
-# - Ctrl+B then D: Detach (Ralph keeps running in background)
-# - Ctrl+B then arrow keys: Switch between panes
-
-# Later, check on progress
-./scripts/ralph-autonomous.sh --status
-
-# Or reattach to see live dashboard
-tmux attach -t ralph-monitor-<session-id>
-
-# Preview before running
-./scripts/ralph-autonomous.sh --dry-run        # See what would happen without making changes
-```
-
-### Dry-Run Mode
-
-**Dry-run mode** (`--dry-run`) is a preview mode that shows what Ralph would do without making any actual changes.
-
-**What dry-run DOES:**
-- ✅ Select issues from GitHub in priority order
-- ✅ Go through all phases (Research → Plan → Implement → Validate → PR)
-- ✅ Show `[DRY RUN] Would invoke...` log messages for each action
-- ✅ Update monitor status files (if using `--monitor`)
-- ✅ Complete the full loop iteration
-
-**What dry-run DOES NOT do:**
-- ❌ Invoke Claude Code skills (`/research_codebase`, `/create_plan`, `/implement_plan`, `/validate_plan`)
-- ❌ Make API calls to Claude (no cost incurred)
-- ❌ Update GitHub issue labels
-- ❌ Create git commits
-- ❌ Create or modify branches
-- ❌ Create pull requests
-- ❌ Make any changes to your repository
-
-**Use dry-run to:**
-- Preview which issues Ralph will process and in what order
-- Test the monitoring dashboard without making changes
-- Verify loop logic after configuration changes
-- Debug issues without side effects
-
-**Example:**
-```bash
-# Preview what Ralph would do
-./scripts/ralph-autonomous.sh --dry-run
-
-# Output shows:
-# [DRY RUN] Would invoke /research_codebase for issue #42
-# [DRY RUN] Would invoke /create_plan for issue #42
-# [DRY RUN] Would reset to main and create branch: feature/42-add-feature-x
-# [DRY RUN] Would invoke /implement_plan for thoughts/plans/...
-# [DRY RUN] Would invoke /validate_plan for thoughts/plans/...
-# [DRY RUN] Would commit changes and create PR
-```
-
 ### How Ralph Works
+
+```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'fontSize':'14px','fontFamily':'system-ui, -apple-system, sans-serif'}}}%%
+flowchart TD
+    Start([🤖 Ralph Starts]) --> OuterLoop{Outer Loop<br/>Issue #1-10}
+
+    OuterLoop -->|Next Issue| Select["🎯 Select Next Issue<br/><i>6-Stage Prioritization</i>"]
+
+    Select --> CheckQueue{Issues<br/>Available?}
+    CheckQueue -->|No| AllDone([✅ All Issues Complete])
+    CheckQueue -->|Yes| CheckCircuit{Circuit<br/>Breaker?}
+
+    CheckCircuit -->|OPEN| Halted([⛔ Halted<br/><i>Fix issues & reset</i>])
+    CheckCircuit -->|CLOSED| InnerLoop["⟳ Inner Loop<br/>Attempt 1-10"]
+
+    InnerLoop --> Research["📋 Research Phase<br/><i>/research_codebase</i>"]
+    Research -->|Missing| CreateResearch["Create research doc"]
+    Research -->|Exists| Plan
+    CreateResearch --> Plan["📝 Plan Phase<br/><i>/create_plan</i>"]
+
+    Plan -->|Missing| CreatePlan["Create implementation plan"]
+    Plan -->|Exists| Branch
+    CreatePlan --> Branch["🌿 Create Feature Branch<br/><i>feature/N-title</i>"]
+
+    Branch --> Implement["⚙️ Implement Phase<br/><i>/implement_plan</i>"]
+
+    Implement -->|Success| Validate["✓ Validate Phase<br/><i>/validate_plan</i>"]
+    Implement -->|Timeout/Error| CheckAttempts
+
+    Validate -->|✅ Passed| Commit["💾 Commit & Push<br/><i>/autonomous_commit</i>"]
+    Validate -->|❌ Failed| CheckAttempts{Attempts<br/>< 10?}
+
+    CheckAttempts -->|Yes| RetryFresh["🔄 Retry with Fresh Session<br/><i>Compressed feedback</i>"]
+    RetryFresh --> InnerLoop
+    CheckAttempts -->|No| Failed["❌ Mark Failed<br/><i>Label: implementation-failed</i>"]
+    Failed --> OuterLoop
+
+    Commit --> CreatePR["📄 Create PR<br/><i>gh pr create</i>"]
+    CreatePR --> RequestReview["🤖 Request @claude Review"]
+
+    RequestReview --> PollReview["⏱️ Poll Review Status<br/><i>10min timeout</i>"]
+    PollReview --> ReviewDecision{Review<br/>Decision?}
+
+    ReviewDecision -->|APPROVED| AutoMerge["🎉 Auto-Merge PR<br/><i>Squash & delete branch</i>"]
+    ReviewDecision -->|CHANGES_REQUESTED| HandleFeedback["🔧 Handle PR Feedback<br/><i>/handle_pr_feedback</i>"]
+    ReviewDecision -->|TIMEOUT| NeedsHuman["⚠️ Needs Human Review<br/><i>Label & continue</i>"]
+
+    HandleFeedback --> ReviewIteration{Iteration<br/>< 3?}
+    ReviewIteration -->|Yes| RequestReview
+    ReviewIteration -->|No| NeedsHuman
+
+    AutoMerge --> CloseIssue["✅ Close Issue<br/><i>Success comment</i>"]
+    CloseIssue --> Archive["📦 Archive Logs<br/><i>.ralph/archived/YYYY-MM/</i>"]
+    Archive --> OuterLoop
+
+    NeedsHuman --> OuterLoop
+
+    %% Styling - Outer loop
+    style Start fill:#1a1a2e,stroke:#16213e,stroke-width:4px,color:#eee
+    style OuterLoop fill:#4a1a5e,stroke:#6a2a7e,stroke-width:3px,color:#fff
+    style AllDone fill:#0f5132,stroke:#198754,stroke-width:4px,color:#fff
+    style Halted fill:#842029,stroke:#b02a37,stroke-width:4px,color:#fff
+
+    %% Styling - Issue selection
+    style Select fill:#1e6f50,stroke:#4fa382,stroke-width:2px,color:#fff
+    style CheckQueue fill:#533483,stroke:#7b68a6,stroke-width:2px,color:#fff
+    style CheckCircuit fill:#b8860b,stroke:#daa520,stroke-width:2px,color:#fff
+
+    %% Styling - Inner loop
+    style InnerLoop fill:#4a1a5e,stroke:#6a2a7e,stroke-width:3px,color:#fff
+    style RetryFresh fill:#6a2a7e,stroke:#8a4a9e,stroke-width:2px,color:#fff
+
+    %% Styling - Research & Plan
+    style Research fill:#2a4494,stroke:#5a7fc7,stroke-width:2px,color:#fff
+    style CreateResearch fill:#2a4494,stroke:#5a7fc7,stroke-width:2px,color:#fff
+    style Plan fill:#2a4494,stroke:#5a7fc7,stroke-width:2px,color:#fff
+    style CreatePlan fill:#2a4494,stroke:#5a7fc7,stroke-width:2px,color:#fff
+
+    %% Styling - Implementation
+    style Branch fill:#1e6f50,stroke:#4fa382,stroke-width:2px,color:#fff
+    style Implement fill:#1e6f50,stroke:#4fa382,stroke-width:2px,color:#fff
+
+    %% Styling - Validation
+    style Validate fill:#b8860b,stroke:#daa520,stroke-width:2px,color:#fff
+    style CheckAttempts fill:#b8860b,stroke:#daa520,stroke-width:2px,color:#fff
+
+    %% Styling - Commit & PR
+    style Commit fill:#2f4f4f,stroke:#5a7d7d,stroke-width:2px,color:#fff
+    style CreatePR fill:#4a4a6a,stroke:#7272a8,stroke-width:2px,color:#fff
+
+    %% Styling - Review process
+    style RequestReview fill:#8b3a62,stroke:#b85c8a,stroke-width:2px,color:#fff
+    style PollReview fill:#8b3a62,stroke:#b85c8a,stroke-width:2px,color:#fff
+    style ReviewDecision fill:#8b3a62,stroke:#b85c8a,stroke-width:3px,color:#fff
+    style HandleFeedback fill:#704e3d,stroke:#9d7050,stroke-width:2px,color:#fff
+    style ReviewIteration fill:#704e3d,stroke:#9d7050,stroke-width:2px,color:#fff
+
+    %% Styling - Success & cleanup
+    style AutoMerge fill:#0f5132,stroke:#198754,stroke-width:2px,color:#fff
+    style CloseIssue fill:#0f5132,stroke:#198754,stroke-width:2px,color:#fff
+    style Archive fill:#2f4f4f,stroke:#5a7d7d,stroke-width:2px,color:#fff
+
+    %% Styling - Failure states
+    style Failed fill:#842029,stroke:#b02a37,stroke-width:2px,color:#fff
+    style NeedsHuman fill:#d97706,stroke:#f59e0b,stroke-width:2px,color:#fff
+```
+
+**Legend:**
+- **Purple nodes** = Loop controls (outer/inner)
+- **Blue nodes** = Research & planning phases
+- **Green nodes** = Implementation & git operations
+- **Gold nodes** = Validation & quality gates
+- **Pink/Brown nodes** = Review & feedback handling
+- **Dark green nodes** = Success paths
+- **Red nodes** = Failure states
+- **Orange nodes** = Human intervention needed
 
 Ralph automatically processes issues end-to-end:
 
@@ -1310,6 +1367,72 @@ Ralph only creates commits and PRs for implementations that pass validation. Fai
 
 **Living Documentation:**
 When @claude reviews PRs and requests changes, Ralph updates the implementation plan with a "PR Review Updates" section. This ensures plans remain accurate documentation of what was actually built, including insights discovered during review. Plans evolve with the code, not just capturing original intent.
+
+### Using Ralph with Live Monitor
+
+Launch Ralph with a live monitoring dashboard:
+
+```bash
+# Launch with live monitoring dashboard
+./scripts/ralph-autonomous.sh --monitor
+
+# The dashboard shows:
+# - Left pane: Ralph execution logs (research, planning, implementation)
+# - Right pane: Live status, task queue, API limits, recent activity
+#
+# Controls:
+# - Ctrl+B then D: Detach (Ralph keeps running in background)
+# - Ctrl+B then arrow keys: Switch between panes
+
+# Later, check on progress
+./scripts/ralph-autonomous.sh --status
+
+# Or reattach to see live dashboard
+tmux attach -t ralph-monitor-<session-id>
+
+# Preview before running
+./scripts/ralph-autonomous.sh --dry-run        # See what would happen without making changes
+```
+
+### Dry-Run Mode
+
+**Dry-run mode** (`--dry-run`) is a preview mode that shows what Ralph would do without making any actual changes.
+
+**What dry-run DOES:**
+- ✅ Select issues from GitHub in priority order
+- ✅ Go through all phases (Research → Plan → Implement → Validate → PR)
+- ✅ Show `[DRY RUN] Would invoke...` log messages for each action
+- ✅ Update monitor status files (if using `--monitor`)
+- ✅ Complete the full loop iteration
+
+**What dry-run DOES NOT do:**
+- ❌ Invoke Claude Code skills (`/research_codebase`, `/create_plan`, `/implement_plan`, `/validate_plan`)
+- ❌ Make API calls to Claude (no cost incurred)
+- ❌ Update GitHub issue labels
+- ❌ Create git commits
+- ❌ Create or modify branches
+- ❌ Create pull requests
+- ❌ Make any changes to your repository
+
+**Use dry-run to:**
+- Preview which issues Ralph will process and in what order
+- Test the monitoring dashboard without making changes
+- Verify loop logic after configuration changes
+- Debug issues without side effects
+
+**Example:**
+```bash
+# Preview what Ralph would do
+./scripts/ralph-autonomous.sh --dry-run
+
+# Output shows:
+# [DRY RUN] Would invoke /research_codebase for issue #42
+# [DRY RUN] Would invoke /create_plan for issue #42
+# [DRY RUN] Would reset to main and create branch: feature/42-add-feature-x
+# [DRY RUN] Would invoke /implement_plan for thoughts/plans/...
+# [DRY RUN] Would invoke /validate_plan for thoughts/plans/...
+# [DRY RUN] Would commit changes and create PR
+```
 
 ### Reset Commands
 
