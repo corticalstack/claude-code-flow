@@ -297,14 +297,16 @@ Labels track issue state through the workflow. Both manual commands (`/research_
 
 | Label | Purpose | Color | Set by |
 |-------|---------|-------|--------|
-| `research-in-progress` | Research actively underway | Blue | `/research_requirements`, Ralph |
-| `research-complete` | Research done, ready for planning | Green | `/research_requirements`, Ralph |
-| `planning-in-progress` | Plan being created | Yellow | `/create_plan`, Ralph |
-| `ready-for-dev` | Has implementation plan, ready to build | Purple | `/create_plan`, Ralph, or manually |
-| `in-progress` | Development actively underway | Red | `/implement_plan`, Ralph |
-| `validation-failed` | Implementation complete but failed validation | Orange | `/validate_plan`, Ralph |
-| `implementation-failed` | Implementation could not be completed | Dark red | Ralph |
-| `pr-submitted` | PR created, awaiting review | Light green | `/describe_pr`, Ralph |
+| `research-in-progress` | Research actively underway | Blue (`1d76db`) | `/research_requirements`, Ralph |
+| `research-complete` | Research done, ready for planning | Green (`0e8a16`) | `/research_requirements`, Ralph |
+| `planning-in-progress` | Plan being created | Yellow (`fbca04`) | `/create_plan`, Ralph |
+| `ready-for-dev` | Has implementation plan, ready to build | Purple (`5319e7`) | `/create_plan`, Ralph, or manually |
+| `in-progress` | Development actively underway | Red (`d93f0b`) | `/implement_plan`, Ralph |
+| `validation-failed` | Implementation complete but failed validation | Light Purple (`d4c5f9`) | `/validate_plan`, Ralph |
+| `implementation-failed` | Implementation could not be completed | Dark Red (`b60205`) | Ralph |
+| `pr-submitted` | PR created, awaiting review | Light Green (`c2e0c6`) | `/describe_pr`, Ralph |
+| `ralph-exempt` | Reserved for human-only work, skipped by Ralph | Gray (`6a737d`) | Manual only |
+| `blocked-by-#N` | Blocked by issue #N (dynamic label) | Any | Manual (see [Dependency Blocking](#dependency-blocking)) |
 
 #### Creating the Labels
 
@@ -313,7 +315,7 @@ Labels track issue state through the workflow. Both manual commands (`/research_
 Create the GitHub labels needed for Ralph autonomous workflow:
 research-in-progress, research-complete, planning-in-progress,
 ready-for-dev, in-progress, validation-failed, implementation-failed,
-pr-submitted
+pr-submitted, ralph-exempt
 ```
 
 **Option 2: Create manually via CLI**
@@ -326,21 +328,43 @@ gh label create "in-progress" --description "Development actively underway" --co
 gh label create "validation-failed" --description "Implementation complete but failed validation" --color "d4c5f9"
 gh label create "implementation-failed" --description "Implementation could not be completed" --color "b60205"
 gh label create "pr-submitted" --description "PR created, awaiting review" --color "c2e0c6"
+gh label create "ralph-exempt" --description "Reserved for human-only work, skipped by Ralph" --color "6a737d"
 ```
+
+**Note:** `blocked-by-#N` labels are created dynamically as needed (e.g., `blocked-by-#42`). You don't need to pre-create them.
 
 **Option 3: Create via GitHub UI** - Settings → Labels → New label
 
 #### How Ralph Uses Labels
 
+**Workflow state labels:**
 ```bash
-# Read: Find issues ready for implementation
+# Find issues ready for implementation
 gh issue list --label "ready-for-dev" --json number,title
 
-# Update: Move issue to next state
+# Move issue to next state
 gh issue edit 42 --add-label "in-progress" --remove-label "ready-for-dev"
 ```
 
-**Manual workflow:** You can also move issues through states manually by adding/removing labels in GitHub UI. Ralph will pick up from wherever the issue is.
+**Control labels:**
+```bash
+# Exempt issue from Ralph (human-only work)
+gh issue edit 42 --add-label "ralph-exempt"
+
+# Block issue #42 until issue #30 is complete
+gh issue edit 42 --add-label "blocked-by-#30"
+
+# Remove block after blocker is resolved (or Ralph auto-removes when blocker closes)
+gh issue edit 42 --remove-label "blocked-by-#30"
+```
+
+**View prioritized queue:**
+```bash
+# See how Ralph will process open issues
+./scripts/ralph-autonomous.sh --priorities
+```
+
+**Manual workflow:** You can move issues through states manually by adding/removing labels in GitHub UI. Ralph will pick up from wherever the issue is.
 
 ---
 
@@ -1098,6 +1122,8 @@ You: [Merges PR]
 
 For fully autonomous multi-issue processing, use the `ralph-autonomous.sh` shell script. This provides a production-ready autonomous workflow with live monitoring, state management, and retry logic.
 
+**About Ralph:** The [Ralph Wiggum technique](https://ghuntley.com/ralph/) is an AI development methodology created by Geoffrey Huntley that runs coding agents in a continuous loop until all tasks are complete. Named after the Simpsons character known for being simple but persistent.
+
 ### Using Ralph with Live Monitor
 
 Launch Ralph with a live monitoring dashboard:
@@ -1124,15 +1150,57 @@ tmux attach -t ralph-monitor-<session-id>
 ./scripts/ralph-autonomous.sh --dry-run        # See what would happen without making changes
 ```
 
+### Dry-Run Mode
+
+**Dry-run mode** (`--dry-run`) is a preview mode that shows what Ralph would do without making any actual changes.
+
+**What dry-run DOES:**
+- ✅ Select issues from GitHub in priority order
+- ✅ Go through all phases (Research → Plan → Implement → Validate → PR)
+- ✅ Show `[DRY RUN] Would invoke...` log messages for each action
+- ✅ Update monitor status files (if using `--monitor`)
+- ✅ Complete the full loop iteration
+
+**What dry-run DOES NOT do:**
+- ❌ Invoke Claude Code skills (`/research_codebase`, `/create_plan`, `/implement_plan`, `/validate_plan`)
+- ❌ Make API calls to Claude (no cost incurred)
+- ❌ Update GitHub issue labels
+- ❌ Create git commits
+- ❌ Create or modify branches
+- ❌ Create pull requests
+- ❌ Make any changes to your repository
+
+**Use dry-run to:**
+- Preview which issues Ralph will process and in what order
+- Test the monitoring dashboard without making changes
+- Verify loop logic after configuration changes
+- Debug issues without side effects
+
+**Example:**
+```bash
+# Preview what Ralph would do
+./scripts/ralph-autonomous.sh --dry-run
+
+# Output shows:
+# [DRY RUN] Would invoke /research_codebase for issue #42
+# [DRY RUN] Would invoke /create_plan for issue #42
+# [DRY RUN] Would reset to main and create branch: feature/42-add-feature-x
+# [DRY RUN] Would invoke /implement_plan for thoughts/plans/...
+# [DRY RUN] Would invoke /validate_plan for thoughts/plans/...
+# [DRY RUN] Would commit changes and create PR
+```
+
 ### How Ralph Works
 
 Ralph automatically processes issues end-to-end:
 
-1. **Selects next issue:**
-   - Filters out issues labeled `ralph-exempt` (reserved for human-only work)
-   - Checks for dependency blocking (skips issues blocked by other issues)
-   - Prioritizes issues with existing plans (`ready-for-dev` label) first
-   - Then selects from remaining open issues
+1. **Selects next issue** using a multi-stage prioritization system:
+   - **Stage 1: Fetch** - Retrieves up to 20 open issues from GitHub
+   - **Stage 2: Filter Exemptions** - Excludes issues labeled `ralph-exempt` (reserved for human-only work)
+   - **Stage 3: Filter Dependencies** - Checks for `blocked-by-#N` labels and skips issues with open blockers
+   - **Stage 4: Score Priority** - Analyzes issue titles/descriptions for keywords to assign priority 1-5 (see [Priority Levels](#priority-levels) below)
+   - **Stage 5: Sort** - Orders issues by: priority score (1=highest), has plan (`ready-for-dev`), has research (`research-complete`), issue number (older first)
+   - **Stage 6: Select** - Picks the top issue from the sorted list
 2. Creates research if missing ([/research_requirements](../.claude/commands/research_requirements.md))
 3. Creates plan if missing ([/create_plan](../.claude/commands/create_plan.md))
 4. Implements the plan ([/implement_plan](../.claude/commands/implement_plan.md))
@@ -1154,6 +1222,85 @@ Ralph automatically processes issues end-to-end:
    - Closes issue with success comment
 9. Moves to next issue
 
+### How Ralph Prioritizes Issues
+
+Ralph doesn't process issues in creation order. Instead, it uses a sophisticated multi-stage prioritization system implemented in [`scripts/ralph_priority.sh`](../scripts/ralph_priority.sh) and [`scripts/ralph_github.sh`](../scripts/ralph_github.sh).
+
+#### Prioritization Pipeline
+
+```
+Open Issues (20)
+    ↓
+Filter: Remove ralph-exempt
+    ↓
+Filter: Remove blocked-by-#N (where #N is open)
+    ↓
+Score: Analyze keywords → Priority 1-5
+    ↓
+Sort: Priority, Has Plan, Has Research, Issue #
+    ↓
+Select: Top issue
+```
+
+#### Priority Levels
+
+Ralph analyzes issue titles and descriptions to assign priority scores based on keyword matching:
+
+| Priority | Type | Description | Keywords | Implementation |
+|----------|------|-------------|----------|----------------|
+| 1 | **Foundational** | Creates structure/setup that other work depends on | structure, setup, scaffold, foundation, infrastructure, base, initial, directory, layout | Checked first |
+| 5 | **Testing** | Requires other work to be complete | test, testing, e2e, qa, playwright, jest, coverage | Checked second (lowest priority) |
+| 3 | **Integration** | Connects components together | integrate, integration, connect, wire up, link, combine, streaming, real-time | Checked third |
+| 4 | **Enhancement** | Improves existing functionality | improve, enhance, optimize, refactor, update, markdown, render | Checked fourth |
+| 2 | **Feature** | Core implementation work (default) | implement, add, create, build, feature, api, client | Checked last + default fallback |
+
+**Note:** Keywords are matched case-insensitively against both issue title and description. Lower priority number = higher priority (Priority 1 issues are worked on first).
+
+#### Sort Criteria
+
+After scoring, issues are sorted by multiple criteria in order of precedence:
+
+1. **Priority score** (ascending: 1, 2, 3, 4, 5) - Foundational work comes first, testing last
+2. **Has plan** - Issues with `ready-for-dev` label come before those without
+3. **Has research** - Issues with `research-complete` label come before those without
+4. **Issue number** (ascending) - Older issues come before newer ones
+
+**Example sort order:**
+```
+#5  Priority 1 (Foundational) + ready-for-dev
+#12 Priority 1 (Foundational) + research-complete
+#3  Priority 1 (Foundational) - no labels
+#8  Priority 2 (Feature) + ready-for-dev
+#15 Priority 2 (Feature) + research-complete
+#7  Priority 2 (Feature) - no labels
+#22 Priority 5 (Testing) + ready-for-dev
+```
+
+#### Dependency Blocking
+
+Ralph respects issue dependencies using GitHub labels:
+
+**To block an issue:**
+```bash
+# Block issue #42 until issue #30 is complete
+gh issue edit 42 --add-label "blocked-by-#30"
+```
+
+**How it works:**
+- Ralph checks each issue for labels matching pattern `blocked-by-#N`
+- If found, checks if blocker issue #N is still open
+- If blocker is **open** → skips the blocked issue
+- If blocker is **closed** → automatically removes the `blocked-by-#N` label and processes the issue
+
+**Label format:** Must be exactly `blocked-by-#<number>` (e.g., `blocked-by-#42`, `blocked-by-#123`)
+
+**View prioritized queue:**
+```bash
+./scripts/ralph-autonomous.sh --priorities
+```
+
+This displays all open issues sorted by Ralph's prioritization algorithm with visual indicators for research (📄) and plans (📋).
+
 **Prerequisites:**
 - GitHub labels must exist - see [GitHub Labels](#github-labels) above
 - Branch protection configured (prevents direct commits to main) - see [Branch Protection Setup](#branch-protection-setup)
@@ -1164,31 +1311,184 @@ Ralph only creates commits and PRs for implementations that pass validation. Fai
 **Living Documentation:**
 When @claude reviews PRs and requests changes, Ralph updates the implementation plan with a "PR Review Updates" section. This ensures plans remain accurate documentation of what was actually built, including insights discovered during review. Plans evolve with the code, not just capturing original intent.
 
-### Resetting Ralph State
+### Reset Commands
 
-If you need to start fresh or clear old test data, use the reset script:
+Ralph maintains state across runs to track progress, remember failures, and prevent infinite loops. Sometimes you need to reset this state.
+
+#### `--reset-circuit` - Reset Circuit Breaker
+
+**What it does:**
+- Resets `.ralph/state/circuit_breaker.json` to initial state
+- Sets circuit breaker state to `CLOSED` (normal operation)
+- Clears all failure counters:
+  - `consecutive_no_progress`: 0
+  - `consecutive_same_error`: 0
+  - `consecutive_validation_fails`: 0
+- Updates `last_transition` timestamp
+
+**When to use:**
+- Circuit breaker is `OPEN` (halting execution)
+- After 3+ consecutive validation failures
+- After 5+ consecutive identical errors
+- After 3+ attempts with no file changes (no progress)
+- You've fixed underlying issues and want Ralph to retry
+
+**What triggers the circuit breaker:**
+- **No Progress**: 3 consecutive attempts with no files changed
+- **Same Error**: 5 consecutive attempts with identical error messages
+- **Validation Failures**: 3 consecutive failed validation attempts
+
+**Example:**
+```bash
+# Check if circuit breaker is open
+./scripts/ralph-autonomous.sh --status
+
+# Output shows:
+# Circuit Breaker: OPEN
+#   - 3 consecutive validation failures
+#   - Last error: Tests failed in validation phase
+
+# After investigating and fixing test issues, reset
+./scripts/ralph-autonomous.sh --reset-circuit
+```
+
+#### `--reset-state` - Complete State Reset
+
+**What it does:**
+- Deletes `.ralph/state/` directory (all tracking files)
+- Deletes `.ralph/active/` directory (per-issue logs and feedback)
+- Preserves `.ralph/archived/` directory (historical data kept)
+- Recreates fresh state with default values
+
+**Files deleted:**
+```
+.ralph/
+├── state/                     [DELETED]
+│   ├── session.json          (current session info)
+│   ├── counters.json          (successful/failed/blocked issue counts)
+│   ├── history.json           (attempt history for all issues)
+│   ├── rate_limit.json        (API call tracking)
+│   └── circuit_breaker.json   (failure tracking)
+├── status.json                [DELETED - monitor status]
+├── progress.json              [DELETED - live progress]
+├── task_queue.json            [DELETED - queue state]
+├── active/                    [DELETED]
+│   └── {issue}/
+│       ├── research_attempt_*.log
+│       ├── plan_attempt_*.log
+│       ├── implement_attempt_*.log
+│       ├── validate_attempt_*.log
+│       └── feedback.json
+└── archived/                  [PRESERVED]
+    └── {YYYY-MM}/
+        └── {issue}/
+```
+
+**When to use:**
+- Starting completely fresh (forgetting all previous runs)
+- Clearing stuck state that's causing issues
+- Testing from a clean slate
+- Resetting API call counters
+- Clearing all issue history and logs
+
+**⚠️ Warning:** This is destructive and cannot be undone. All attempt history, feedback, and logs will be permanently deleted (archives preserved).
+
+**Example:**
+```bash
+# You'll be prompted to confirm
+./scripts/ralph-autonomous.sh --reset-state
+
+# Prompt:
+# Reset Ralph state? This will clear session, counters, and active issues (archives preserved). [y/N]
+```
+
+#### Comparison
+
+| Aspect | `--reset-circuit` | `--reset-state` |
+|--------|-------------------|-----------------|
+| **Scope** | Circuit breaker only | All state except archives |
+| **Files affected** | 1 file (circuit_breaker.json) | state/, active/, monitor files |
+| **Destructive** | No (just resets counters) | Yes (deletes all tracking) |
+| **Use when** | Circuit is OPEN, want to retry | Want completely fresh start |
+| **Preserves** | All history and logs | Only archived/ directory |
+| **Typical use** | After fixing validation issues | Testing, debugging, major changes |
+
+#### Alternative: `reset-ralph-state.sh` Script
+
+For a more thorough reset that also clears archives:
 
 ```bash
 ./scripts/reset-ralph-state.sh
 ```
 
-**What it resets:**
-- Clears `.ralph/active/` (active issue logs)
-- Clears `.ralph/archived/` (archived issue logs)
-- Resets circuit breaker to CLOSED state
-- Resets all counters (iterations, successes, failures) to 0
-- Clears execution history
-- Resets rate limiting
-- Removes session file
+This script deletes the entire `.ralph/` directory including archives. Use when you want to completely start over with no historical data.
 
-**When to use:**
-- Starting fresh with the template
-- After testing/development work
-- Recovering from corrupted state
-- Before sharing the template
+### Dashboard Theme & Appearance
 
-The script includes a confirmation prompt and shows exactly what will be reset.
+The monitoring dashboard uses a custom tmux theme ([`.tmux.ralph.conf`](.tmux.ralph.conf)) designed for optimal readability and professional appearance.
 
+**Theme Features:**
+- **Catppuccin Mocha** color scheme - Professional, easy on the eyes for extended monitoring
+- **Pane titles** - Clear labels ("Ralph Execution" and "Monitor Dashboard")
+- **Enhanced status bar** - Shows session name, time, and keyboard shortcuts
+- **Powerline-style separators** - Clean visual hierarchy (requires Nerd Fonts)
+
+**Installing Nerd Fonts (Optional but Recommended):**
+
+For best appearance with Powerline symbols and icons, install a [Nerd Font](https://www.nerdfonts.com/):
+
+```bash
+# Ubuntu/Debian - Install JetBrainsMono Nerd Font
+mkdir -p ~/.local/share/fonts
+cd ~/.local/share/fonts
+wget https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip
+unzip JetBrainsMono.zip
+rm JetBrainsMono.zip
+fc-cache -fv
+```
+
+**Alternative fonts:**
+- **FiraCode Nerd Font** - Popular among developers
+- **Hack Nerd Font** - Excellent readability
+- **Meslo Nerd Font** - Widely compatible
+
+After installing, configure your terminal emulator to use the Nerd Font.
+
+**Graceful Degradation:**
+
+The dashboard works perfectly fine **without** Nerd Fonts - you'll see replacement characters instead of fancy icons, but all functionality remains intact. The configuration is designed to degrade gracefully:
+
+- With Nerd Fonts: ` RALPH │  /home/project │  14:23:45`
+- Without Nerd Fonts: `RALPH │ /home/project │ 14:23:45` (functional, just less fancy)
+
+**Customizing the Theme:**
+
+To modify colors, layout, or status bar content:
+
+1. Edit [`.tmux.ralph.conf`](.tmux.ralph.conf)
+2. Adjust color variables in the "CATPPUCCIN MOCHA COLORS" section
+3. Modify status bar in the "STATUS BAR CONTENT" section
+4. Changes take effect on next `--monitor` launch
+
+**Alternative Themes:**
+
+If you prefer a different theme (Nord, Tokyo Night, Dracula), you can replace the color palette in `.tmux.ralph.conf`. See comments in the config file for guidance.
+
+### Why Custom Command Over Official Plugin?
+
+Anthropic provides an official plugin: `/plugin install ralph-wiggum@claude-plugins-official`
+
+This template uses a **custom command** instead. Here's why:
+
+| Aspect | Official Plugin | Custom `/ralph` |
+|--------|----------------|-----------------|
+| **Transparency** | Black box - can't see what it does | Full visibility into loop logic |
+| **Integration** | Generic | Uses YOUR GitHub labels, paths, existing commands |
+| **Workflow** | Standalone | Orchestrates `/research_requirements` → `/create_plan` → `/implement_plan` → `/validate_plan` |
+| **Quality Gates** | Unknown | Validation before commits, fails gracefully |
+| **Artifacts** | Unknown | Creates `thoughts/research/` and `thoughts/plans/` documents |
+| **Customization** | Use as-is | Modify to match your workflow |
+| **Maintenance** | Anthropic controls updates | You control changes, version controlled in your repo |
 ---
 
 ## Next Steps

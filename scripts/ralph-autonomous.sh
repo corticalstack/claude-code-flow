@@ -8,12 +8,12 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Source libraries
-source "$SCRIPT_DIR/lib/ralph_utils.sh"
-source "$SCRIPT_DIR/lib/ralph_state.sh"
-source "$SCRIPT_DIR/lib/ralph_circuit_breaker.sh"
-source "$SCRIPT_DIR/lib/ralph_github.sh"
-source "$SCRIPT_DIR/lib/ralph_priority.sh"
-source "$SCRIPT_DIR/lib/ralph_feedback.sh"
+source "$SCRIPT_DIR/ralph_utils.sh"
+source "$SCRIPT_DIR/ralph_state.sh"
+source "$SCRIPT_DIR/ralph_circuit_breaker.sh"
+source "$SCRIPT_DIR/ralph_github.sh"
+source "$SCRIPT_DIR/ralph_priority.sh"
+source "$SCRIPT_DIR/ralph_feedback.sh"
 
 # Configuration
 readonly MAX_ISSUE_ITERATIONS=10        # Process up to 10 different issues
