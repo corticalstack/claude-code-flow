@@ -1124,72 +1124,6 @@ For fully autonomous multi-issue processing, use the `ralph-autonomous.sh` shell
 
 **About Ralph:** The [Ralph Wiggum technique](https://ghuntley.com/ralph/) is an AI development methodology created by Geoffrey Huntley that runs coding agents in a continuous loop until all tasks are complete. Named after the Simpsons character known for being simple but persistent.
 
-### Using Ralph with Live Monitor
-
-Launch Ralph with a live monitoring dashboard:
-
-```bash
-# Launch with live monitoring dashboard
-./scripts/ralph-autonomous.sh --monitor
-
-# The dashboard shows:
-# - Left pane: Ralph execution logs (research, planning, implementation)
-# - Right pane: Live status, task queue, API limits, recent activity
-#
-# Controls:
-# - Ctrl+B then D: Detach (Ralph keeps running in background)
-# - Ctrl+B then arrow keys: Switch between panes
-
-# Later, check on progress
-./scripts/ralph-autonomous.sh --status
-
-# Or reattach to see live dashboard
-tmux attach -t ralph-monitor-<session-id>
-
-# Preview before running
-./scripts/ralph-autonomous.sh --dry-run        # See what would happen without making changes
-```
-
-### Dry-Run Mode
-
-**Dry-run mode** (`--dry-run`) is a preview mode that shows what Ralph would do without making any actual changes.
-
-**What dry-run DOES:**
-- ✅ Select issues from GitHub in priority order
-- ✅ Go through all phases (Research → Plan → Implement → Validate → PR)
-- ✅ Show `[DRY RUN] Would invoke...` log messages for each action
-- ✅ Update monitor status files (if using `--monitor`)
-- ✅ Complete the full loop iteration
-
-**What dry-run DOES NOT do:**
-- ❌ Invoke Claude Code skills (`/research_codebase`, `/create_plan`, `/implement_plan`, `/validate_plan`)
-- ❌ Make API calls to Claude (no cost incurred)
-- ❌ Update GitHub issue labels
-- ❌ Create git commits
-- ❌ Create or modify branches
-- ❌ Create pull requests
-- ❌ Make any changes to your repository
-
-**Use dry-run to:**
-- Preview which issues Ralph will process and in what order
-- Test the monitoring dashboard without making changes
-- Verify loop logic after configuration changes
-- Debug issues without side effects
-
-**Example:**
-```bash
-# Preview what Ralph would do
-./scripts/ralph-autonomous.sh --dry-run
-
-# Output shows:
-# [DRY RUN] Would invoke /research_codebase for issue #42
-# [DRY RUN] Would invoke /create_plan for issue #42
-# [DRY RUN] Would reset to main and create branch: feature/42-add-feature-x
-# [DRY RUN] Would invoke /implement_plan for thoughts/plans/...
-# [DRY RUN] Would invoke /validate_plan for thoughts/plans/...
-# [DRY RUN] Would commit changes and create PR
-```
-
 ### How Ralph Works
 
 ```mermaid
@@ -1426,6 +1360,72 @@ Ralph only creates commits and PRs for implementations that pass validation. Fai
 
 **Living Documentation:**
 When @claude reviews PRs and requests changes, Ralph updates the implementation plan with a "PR Review Updates" section. This ensures plans remain accurate documentation of what was actually built, including insights discovered during review. Plans evolve with the code, not just capturing original intent.
+
+### Using Ralph with Live Monitor
+
+Launch Ralph with a live monitoring dashboard:
+
+```bash
+# Launch with live monitoring dashboard
+./scripts/ralph-autonomous.sh --monitor
+
+# The dashboard shows:
+# - Left pane: Ralph execution logs (research, planning, implementation)
+# - Right pane: Live status, task queue, API limits, recent activity
+#
+# Controls:
+# - Ctrl+B then D: Detach (Ralph keeps running in background)
+# - Ctrl+B then arrow keys: Switch between panes
+
+# Later, check on progress
+./scripts/ralph-autonomous.sh --status
+
+# Or reattach to see live dashboard
+tmux attach -t ralph-monitor-<session-id>
+
+# Preview before running
+./scripts/ralph-autonomous.sh --dry-run        # See what would happen without making changes
+```
+
+### Dry-Run Mode
+
+**Dry-run mode** (`--dry-run`) is a preview mode that shows what Ralph would do without making any actual changes.
+
+**What dry-run DOES:**
+- ✅ Select issues from GitHub in priority order
+- ✅ Go through all phases (Research → Plan → Implement → Validate → PR)
+- ✅ Show `[DRY RUN] Would invoke...` log messages for each action
+- ✅ Update monitor status files (if using `--monitor`)
+- ✅ Complete the full loop iteration
+
+**What dry-run DOES NOT do:**
+- ❌ Invoke Claude Code skills (`/research_codebase`, `/create_plan`, `/implement_plan`, `/validate_plan`)
+- ❌ Make API calls to Claude (no cost incurred)
+- ❌ Update GitHub issue labels
+- ❌ Create git commits
+- ❌ Create or modify branches
+- ❌ Create pull requests
+- ❌ Make any changes to your repository
+
+**Use dry-run to:**
+- Preview which issues Ralph will process and in what order
+- Test the monitoring dashboard without making changes
+- Verify loop logic after configuration changes
+- Debug issues without side effects
+
+**Example:**
+```bash
+# Preview what Ralph would do
+./scripts/ralph-autonomous.sh --dry-run
+
+# Output shows:
+# [DRY RUN] Would invoke /research_codebase for issue #42
+# [DRY RUN] Would invoke /create_plan for issue #42
+# [DRY RUN] Would reset to main and create branch: feature/42-add-feature-x
+# [DRY RUN] Would invoke /implement_plan for thoughts/plans/...
+# [DRY RUN] Would invoke /validate_plan for thoughts/plans/...
+# [DRY RUN] Would commit changes and create PR
+```
 
 ### Reset Commands
 
