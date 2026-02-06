@@ -17,15 +17,15 @@ This project uses the **Claude Code Flow** template - a structured workflow for 
 ## Workflow Overview
 
 **Manual (step-by-step):**
-```
-/research_requirements → /create_plan → /implement_plan → /validate_plan → /commit
-```
+
+[/research_requirements](.claude/commands/research_requirements.md) → [/create_plan](.claude/commands/create_plan.md) → [/implement_plan](.claude/commands/implement_plan.md) → [/validate_plan](.claude/commands/validate_plan.md) → [/commit](.claude/commands/commit.md) → Push & PR → [/describe_pr](.claude/commands/describe_pr.md) → Review → [/handle_pr_feedback](.claude/commands/handle_pr_feedback.md) (if needed) → Merge
 
 **Autonomous (unattended):**
 ```bash
-/ralph                                   # Process up to 10 issues automatically
 ./scripts/ralph-autonomous.sh --monitor  # Launch with live dashboard
 ```
+
+Processes up to 10 issues automatically with live monitoring, state management, and retry logic.
 
 See [docs/TEMPLATE_INSTRUCTIONS.md](docs/TEMPLATE_INSTRUCTIONS.md) for complete documentation.
 

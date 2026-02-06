@@ -9,13 +9,8 @@ This guide walks you through setting up a project created from the `claude-code-
 - [Prerequisites](#prerequisites)
   - [GitHub CLI Setup](#github-cli-setup)
   - [Python Environment Setup (UV)](#python-environment-setup-uv)
-- [Branch Protection Setup](#branch-protection-setup)
-  - [Why Protect Main?](#why-protect-main)
-  - [Check if Main Branch Exists](#check-if-main-branch-exists)
-  - [Configure Branch Protection Rules](#configure-branch-protection-rules)
-  - [Verify Branch Protection](#verify-branch-protection)
-  - [Working with Protected Main](#working-with-protected-main)
-  - [Automatic Reviewer Assignment](#automatic-reviewer-assignment)
+  - [Branch Protection Setup](#branch-protection-setup)
+  - [GitHub Labels](#github-labels)
 - [Workflow Setup Guide](#workflow-setup-guide)
   - [Step 1: Verify Directory Structure](#step-1-verify-directory-structure)
   - [Step 2: Git Configuration (Optional)](#step-2-git-configuration-optional)
@@ -23,9 +18,7 @@ This guide walks you through setting up a project created from the `claude-code-
 - [Important: Command Caching Behavior](#important-command-caching-behavior)
 - [Setting Up Claude PR Reviews](#setting-up-claude-pr-reviews)
 - [Command Reference](#command-reference)
-- [Feature Branch Workflow](#feature-branch-workflow)
-- [Directory Structure](#directory-structure)
-- [Using @claude in Pull Requests](#using-claude-in-pull-requests)
+- [Step-by-Step Development Workflow](#step-by-step-development-workflow)
 - [Ralph Autonomous Development](#ralph-autonomous-development)
 - [Next Steps](#next-steps)
 
@@ -41,7 +34,7 @@ Before setting up the workflow, ensure you have:
 
 ### GitHub CLI Setup
 
-The workflow uses the GitHub CLI (`gh`) for issue and PR management. This is required for commands like `/create_plan`, `/describe_pr`, and others that interact with GitHub.
+The workflow uses the GitHub CLI (`gh`) for issue and PR management. This is required for commands like [/create_plan](../.claude/commands/create_plan.md), [/describe_pr](../.claude/commands/describe_pr.md), and others that interact with GitHub.
 
 #### Install GitHub CLI
 
@@ -82,7 +75,7 @@ You should see output showing your account and token scopes including `repo`.
 
 The workflow hooks use Python tools like `ruff` for auto-formatting and linting. We recommend [UV](https://docs.astral.sh/uv/) - a fast, modern Python package manager written in Rust that's 10-100x faster than pip.
 
-> **Note:** This template includes a `.python-version` file (set to `3.12`) that UV and other Python version managers (pyenv, asdf) respect. UV will automatically use this Python version when creating virtual environments.
+> **Note:** This template includes a [.python-version](../.python-version) file (set to `3.12`) that UV and other Python version managers (pyenv, asdf) respect. UV will automatically use this Python version when creating virtual environments.
 
 #### 1. Check if UV is Installed
 
@@ -150,13 +143,11 @@ source .venv/bin/activate
 ruff --version
 ```
 
----
-
-## Branch Protection Setup
+### Branch Protection Setup
 
 **Configure branch protection before starting development work.** This enforces the feature branch + PR workflow and prevents accidental commits directly to main.
 
-### Why Protect Main?
+#### Why Protect Main?
 
 Branch protection ensures:
 - All changes go through pull requests with code review
@@ -164,7 +155,7 @@ Branch protection ensures:
 - Clear audit trail of what changed, why, and who approved it
 - Safety net preventing accidental force pushes or breaking changes
 
-### Check if Main Branch Exists
+#### Check if Main Branch Exists
 
 **Important:** In a new repository, the main branch doesn't exist until you make your first commit.
 
@@ -194,7 +185,7 @@ Set main as the default branch (if not already):
 gh repo edit --default-branch main
 ```
 
-### Configure Branch Protection Rules
+#### Configure Branch Protection Rules
 
 Once main exists, configure protection rules via GitHub CLI:
 
@@ -232,7 +223,7 @@ EOFINNER
    - ✅ **Do not allow bypassing the above settings**
 6. Click **Create** or **Save changes**
 
-### Verify Branch Protection
+#### Verify Branch Protection
 
 ```bash
 # Check protection status
@@ -246,7 +237,7 @@ gh api repos/:owner/:repo/branches/main/protection
 
 You should see the main branch listed with a "Protected" badge.
 
-### Working with Protected Main
+#### Working with Protected Main
 
 Once protected, you **cannot** push directly to main:
 
@@ -257,22 +248,22 @@ git push origin main
 
 Instead, all work must go through feature branches and pull requests (see [Feature Branch Workflow](#feature-branch-workflow) below).
 
-### Automatic Reviewer Assignment
+#### Automatic Reviewer Assignment
 
 **Ensure all PRs have reviewers assigned automatically** using a CODEOWNERS file. This works for PRs created manually, by Claude Code, or through automation.
 
 > **Note:** For solo developers, CODEOWNERS is optional. If you're the only contributor and have `required_approving_review_count: 0` set in branch protection, you can skip this section. CODEOWNERS is primarily useful for teams or repositories that accept external contributions.
 
-#### Why Auto-assign Reviewers?
+##### Why Auto-assign Reviewers?
 
 - Ensures no PR is forgotten or left unreviewed
 - Works consistently across all PR creation methods (CLI, Claude Code, GitHub Actions)
 - Single source of truth for who reviews what
 - Integrates seamlessly with GitHub's review workflow
 
-#### Setup CODEOWNERS
+##### Setup CODEOWNERS
 
-Create `.github/CODEOWNERS` to automatically request reviews:
+Create [.github/CODEOWNERS](../.github/CODEOWNERS) to automatically request reviews:
 
 ```bash
 # Create .github directory if it doesn't exist
@@ -298,6 +289,59 @@ EOFINNER
 - Applies to all files (`*` pattern) in the repository
 - Works immediately—no additional configuration needed
 
+### GitHub Labels
+
+> **Required for workflow commands:** These labels must exist in your repository for both manual and autonomous workflows.
+
+Labels track issue state through the workflow. Both manual commands (`/research_requirements`, `/create_plan`, `/implement_plan`) and Ralph autonomous script update labels automatically as work progresses.
+
+| Label | Purpose | Color | Set by |
+|-------|---------|-------|--------|
+| `research-in-progress` | Research actively underway | Blue | `/research_requirements`, Ralph |
+| `research-complete` | Research done, ready for planning | Green | `/research_requirements`, Ralph |
+| `planning-in-progress` | Plan being created | Yellow | `/create_plan`, Ralph |
+| `ready-for-dev` | Has implementation plan, ready to build | Purple | `/create_plan`, Ralph, or manually |
+| `in-progress` | Development actively underway | Red | `/implement_plan`, Ralph |
+| `validation-failed` | Implementation complete but failed validation | Orange | `/validate_plan`, Ralph |
+| `implementation-failed` | Implementation could not be completed | Dark red | Ralph |
+| `pr-submitted` | PR created, awaiting review | Light green | `/describe_pr`, Ralph |
+
+#### Creating the Labels
+
+**Option 1: Ask Claude to create them**
+```
+Create the GitHub labels needed for Ralph autonomous workflow:
+research-in-progress, research-complete, planning-in-progress,
+ready-for-dev, in-progress, validation-failed, implementation-failed,
+pr-submitted
+```
+
+**Option 2: Create manually via CLI**
+```bash
+gh label create "research-in-progress" --description "Research actively underway" --color "1d76db"
+gh label create "research-complete" --description "Research done, ready for planning" --color "0e8a16"
+gh label create "planning-in-progress" --description "Plan being created" --color "fbca04"
+gh label create "ready-for-dev" --description "Has implementation plan, ready to build" --color "5319e7"
+gh label create "in-progress" --description "Development actively underway" --color "d93f0b"
+gh label create "validation-failed" --description "Implementation complete but failed validation" --color "d4c5f9"
+gh label create "implementation-failed" --description "Implementation could not be completed" --color "b60205"
+gh label create "pr-submitted" --description "PR created, awaiting review" --color "c2e0c6"
+```
+
+**Option 3: Create via GitHub UI** - Settings → Labels → New label
+
+#### How Ralph Uses Labels
+
+```bash
+# Read: Find issues ready for implementation
+gh issue list --label "ready-for-dev" --json number,title
+
+# Update: Move issue to next state
+gh issue edit 42 --add-label "in-progress" --remove-label "ready-for-dev"
+```
+
+**Manual workflow:** You can also move issues through states manually by adding/removing labels in GitHub UI. Ralph will pick up from wherever the issue is.
+
 ---
 
 ## Workflow Setup Guide
@@ -307,6 +351,8 @@ This section guides you through configuring the Claude Code workflow for your pr
 ### Step 1: Verify Directory Structure
 
 After creating from the template, your project will have this structure:
+
+**Directory Structure:**
 
 ```
 your-project/
@@ -322,10 +368,10 @@ your-project/
 │   ├── research/           # Research output documents (empty)
 │   ├── plans/              # Implementation plans (empty)
 │   └── prs/                # PR descriptions (empty)
-├── docs/                   # Workflow documentation
+├── docs/
 │   └── TEMPLATE_INSTRUCTIONS.md
 ├── .github/
-│   ├── workflows/          # GitHub Actions
+│   ├── workflows/
 │   │   └── claude.yml      # Claude Code PR review automation
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   └── CODEOWNERS
@@ -343,6 +389,23 @@ your-project/
 ├── README.md               # Replace with your project documentation
 └── CLAUDE.md               # Claude Code instructions
 ```
+
+**Key Files:**
+- [.claude/settings.json](../.claude/settings.json) - Hooks configuration
+- [.github/workflows/claude.yml](../.github/workflows/claude.yml) - Claude Code PR review automation
+- [.github/PULL_REQUEST_TEMPLATE.md](../.github/PULL_REQUEST_TEMPLATE.md) - PR template
+- [.github/CODEOWNERS](../.github/CODEOWNERS) - Auto-assign reviewers
+- [scripts/ralph-autonomous.sh](../scripts/ralph-autonomous.sh) - Autonomous loop script
+- [scripts/ralph_monitor.sh](../scripts/ralph_monitor.sh) - Real-time monitoring dashboard
+- [scripts/reset-ralph-state.sh](../scripts/reset-ralph-state.sh) - Reset Ralph state utility
+- [.tmux/scripts/ralph_runtime.sh](../.tmux/scripts/ralph_runtime.sh) - Tmux runtime helper
+- [.tmux.ralph.conf](../.tmux.ralph.conf) - Monitoring dashboard config
+- [.python-version](../.python-version) - Python version specification
+- [CONTRIBUTING.md](../CONTRIBUTING.md) - Contribution guidelines
+- [LICENSE](../LICENSE) - Project license
+- [README.md](../README.md) - Project documentation
+- [CLAUDE.md](../CLAUDE.md) - Claude Code instructions
+- [docs/TEMPLATE_INSTRUCTIONS.md](../docs/TEMPLATE_INSTRUCTIONS.md) - This file
 
 **What's missing?** Your source code! Add:
 - `src/` or your preferred code directory
@@ -373,7 +436,7 @@ echo "thoughts/" >> .gitignore
 
 ### Step 3: Configure Hooks
 
-Claude Code hooks automate common tasks and protect sensitive files. The hooks configuration lives in `.claude/settings.json`.
+Claude Code hooks automate common tasks and protect sensitive files. The hooks configuration lives in [.claude/settings.json](../.claude/settings.json).
 
 ### What the Hooks Do
 
@@ -459,7 +522,7 @@ osascript -e 'display notification "Test" with title "Claude Code"'
 
 ### Customizing Hooks
 
-Edit `.claude/settings.json` to customize:
+Edit [.claude/settings.json](../.claude/settings.json) to customize:
 
 - **Add file types**: Extend the PostToolUse patterns for other languages
 - **Change formatters**: Replace Prettier/Ruff with your preferred tools
@@ -470,7 +533,7 @@ Edit `.claude/settings.json` to customize:
 
 ## Important: Command Caching Behavior
 
-Claude Code loads command files (`.claude/commands/*.md`) into memory when a session starts. This means:
+Claude Code loads command files ([.claude/commands/](../.claude/commands/)*.md) into memory when a session starts. This means:
 
 **If you edit a command file during a session, the changes won't take effect until you restart Claude Code.**
 
@@ -487,7 +550,7 @@ If you edit a command and it still behaves the old way:
 
 ### Solution
 
-Restart your Claude Code session after modifying any files in `.claude/commands/`.
+Restart your Claude Code session after modifying any files in [.claude/commands/](../.claude/commands/).
 
 ```bash
 # Exit Claude Code (Ctrl+C or /exit)
@@ -501,11 +564,11 @@ This ensures all command files are freshly loaded from disk.
 
 ## Setting Up Claude PR Reviews
 
-Enable Claude to review pull requests and improve `CLAUDE.md` over time by setting up the GitHub Action.
+Enable Claude to review pull requests and improve [CLAUDE.md](../CLAUDE.md) over time by setting up the GitHub Action.
 
 ### Step 1: Workflow File (Already Included)
 
-The workflow file `.github/workflows/claude.yml` is already included in this template. It triggers when @claude is mentioned in issues or PR comments.
+The workflow file [.github/workflows/claude.yml](../.github/workflows/claude.yml) is already included in this template. It triggers when @claude is mentioned in issues or PR comments.
 
 #### Workflow Permissions
 
@@ -513,16 +576,16 @@ The workflow is configured with **write permissions**:
 
 | Permission | Level | Purpose |
 |------------|-------|---------|
-| `contents` | write | Commit updates to `CLAUDE.md` and other files |
+| `contents` | write | Commit updates to [CLAUDE.md](../CLAUDE.md) and other files |
 | `pull-requests` | write | Comment on PRs, suggest changes |
 | `issues` | write | Respond to issue comments |
 | `id-token` | write | Authentication with GitHub |
 
-**Why write access?** The feedback loop requires Claude to commit improvements to `CLAUDE.md` directly. Without write access, Claude could only suggest changes in comments, losing the automated improvement cycle.
+**Why write access?** The feedback loop requires Claude to commit improvements to [CLAUDE.md](../CLAUDE.md) directly. Without write access, Claude could only suggest changes in comments, losing the automated improvement cycle.
 
 #### CLAUDE.md Update Instructions
 
-The workflow includes a prompt that instructs Claude to consider updating `CLAUDE.md` when it notices:
+The workflow includes a prompt that instructs Claude to consider updating [CLAUDE.md](../CLAUDE.md) when it notices:
 - Recurring mistakes or anti-patterns
 - Project conventions worth documenting
 - Corrections to existing instructions
@@ -547,7 +610,7 @@ The workflow uses your Claude Code Max subscription via an OAuth token. Set it u
 2. Select your repository when prompted
 3. The token is automatically configured as a repository secret
 
-> **Note:** This uses your Claude Code Max subscription, not a separate Anthropic API key. The workflow is already configured to use `claude_code_oauth_token` in `.github/workflows/claude.yml`.
+> **Note:** This uses your Claude Code Max subscription, not a separate Anthropic API key. The workflow is already configured to use `claude_code_oauth_token` in [.github/workflows/claude.yml](../.github/workflows/claude.yml).
 
 ### Step 3: Test the Workflow
 
@@ -563,17 +626,6 @@ Once the OAuth token is configured, test that @claude mentions work:
    - GitHub Action runs (check Actions tab)
    - Claude responds with a comment
 
-See [Using @claude in PR Reviews](../README.md#using-claude-in-pr-reviews) in the main README for comprehensive examples.
-
-### The Feedback Loop
-
-The workflow has **write permissions**, enabling Claude to commit updates to `CLAUDE.md` when it notices:
-- Recurring mistakes or anti-patterns
-- Project conventions that should be documented
-- Lessons learned from code reviews
-
-This creates a feedback loop where Claude Code improves over time - each PR review can result in better instructions for future sessions.
-
 ---
 
 ## Command Reference
@@ -584,136 +636,321 @@ The workflow provides these commands organized by phase:
 
 | Command | Purpose |
 |---------|---------|
-| `/research_requirements` | Research requirements and tech choices for new features |
-| `/research_codebase` | Document existing codebase patterns and architecture |
+| [/research_requirements](../.claude/commands/research_requirements.md) | Research requirements and tech choices for new features |
+| [/research_codebase](../.claude/commands/research_codebase.md) | Document existing codebase patterns and architecture |
 
 ### Planning Phase
 
 | Command | Purpose |
 |---------|---------|
-| `/create_plan` | Create detailed implementation plans with phased approach |
-| `/iterate_plan` | Update existing plans based on new requirements |
+| [/create_plan](../.claude/commands/create_plan.md) | Create detailed implementation plans with phased approach |
+| [/iterate_plan](../.claude/commands/iterate_plan.md) | Update existing plans based on new requirements |
 
 ### Implementation Phase
 
 | Command | Purpose |
 |---------|---------|
-| `/implement_plan` | Execute plans phase by phase with verification checkpoints |
-| `/validate_plan` | Validate implementation matches plan (quality gate before commit) |
+| [/implement_plan](../.claude/commands/implement_plan.md) | Execute plans phase by phase with verification checkpoints |
+| [/validate_plan](../.claude/commands/validate_plan.md) | Validate implementation matches plan (quality gate before commit) |
 
 ### Commit & PR Phase
 
 | Command | Purpose |
 |---------|---------|
-| `/commit` | Create git commits with user approval |
-| `/autonomous_commit` | Create commits without approval (for autonomous workflows) |
-| `/describe_pr` | Generate comprehensive PR descriptions from templates |
+| [/commit](../.claude/commands/commit.md) | Create git commits with user approval |
+| [/autonomous_commit](../.claude/commands/autonomous_commit.md) | Create commits without approval (for autonomous workflows) |
+| [/describe_pr](../.claude/commands/describe_pr.md) | Generate comprehensive PR descriptions from templates |
+| [/handle_pr_feedback](../.claude/commands/handle_pr_feedback.md) | Handle @claude PR review feedback - update plan and implement changes |
 
 ### Autonomous Workflow
 
-| Command | Purpose |
-|---------|---------|
-| `/ralph` | Autonomous issue processing loop (Research → Plan → Implement → Validate → PR) |
+| Script | Purpose |
+|--------|---------|
+| [ralph-autonomous.sh](../scripts/ralph-autonomous.sh) | Autonomous issue processing loop with monitoring (Research → Plan → Implement → Validate → PR → Review → Merge) |
 
 ### Session Management
 
 | Command | Purpose |
 |---------|---------|
-| `/create_handoff` | Create handoff document for transferring work to another session |
-| `/resume_handoff` | Resume work from handoff document with context |
+| [/create_handoff](../.claude/commands/create_handoff.md) | Create handoff document for transferring work to another session |
+| [/resume_handoff](../.claude/commands/resume_handoff.md) | Resume work from handoff document with context |
 
 **Typical workflow:**
 
 **Greenfield (new features):**
-```
-/research_requirements → /create_plan → /implement_plan → /validate_plan → /commit
-```
+
+[/research_requirements](../.claude/commands/research_requirements.md) → [/create_plan](../.claude/commands/create_plan.md) → [/implement_plan](../.claude/commands/implement_plan.md) → [/validate_plan](../.claude/commands/validate_plan.md) → [/commit](../.claude/commands/commit.md) → Push & PR → [/describe_pr](../.claude/commands/describe_pr.md) → Review → [/handle_pr_feedback](../.claude/commands/handle_pr_feedback.md) (if needed)
 
 **Brownfield (existing codebase):**
-```
-/research_codebase → /create_plan → /implement_plan → /validate_plan → /commit
-```
 
-See [CLAUDE.md](../CLAUDE.md) for workflow guidance and the main [README.md](../README.md) for quick reference.
+[/research_codebase](../.claude/commands/research_codebase.md) → [/create_plan](../.claude/commands/create_plan.md) → [/implement_plan](../.claude/commands/implement_plan.md) → [/validate_plan](../.claude/commands/validate_plan.md) → [/commit](../.claude/commands/commit.md) → Push & PR → [/describe_pr](../.claude/commands/describe_pr.md) → Review → [/handle_pr_feedback](../.claude/commands/handle_pr_feedback.md) (if needed)
 
 ---
 
-## Feature Branch Workflow
+## Step-by-Step Development Workflow
 
-All development work should be done on feature branches. Here's the typical workflow:
+> **Note:** If using [ralph-autonomous.sh](../scripts/ralph-autonomous.sh) for autonomous workflow, branch creation and the full workflow are handled automatically. This section is for manual step-by-step development.
+
+```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'fontSize':'15px','fontFamily':'system-ui, -apple-system, sans-serif'}}}%%
+flowchart TD
+    Start([Create GitHub Issue]) --> Branch[🌿 Create Feature Branch]
+    Branch --> Research{New Feature or<br/>Existing Codebase?}
+
+    Research -->|New| ResReq["📋 research_requirements<br/><i>Explore requirements</i>"]
+    Research -->|Existing| ResCB["🔎 research_codebase<br/><i>Understand patterns</i>"]
+
+    ResReq --> Plan["📝 create_plan<br/><i>Design approach</i>"]
+    ResCB --> Plan
+
+    Plan --> Implement["implement_plan<br/><i>Build features</i>"]
+    Implement --> Validate["✓ validate_plan<br/><i>Quality check</i>"]
+
+    Validate -->|❌ Failed| Implement
+    Validate -->|✅ Passed| Commit["💾 commit<br/><i>Save changes</i>"]
+
+    Commit --> Push["Push Branch"]
+    Push --> CreatePR["Create Draft PR<br/><i>gh pr create --draft</i>"]
+    CreatePR --> DescribePR["📄 describe_pr<br/><i>Generate description</i>"]
+    DescribePR --> Ready["Mark PR Ready<br/><i>gh pr ready</i>"]
+
+    Ready --> Review{"🤖 @claude<br/>Review"}
+
+    Review -->|✅ Approved| Merge["🎉 Merge PR"]
+    Review -->|🔄 Changes<br/>Requested| Feedback["🔧 handle_pr_feedback<br/><i>Update plan & implement</i>"]
+
+    Feedback --> Review
+
+    Merge --> Done([🏁 Issue Complete])
+
+    %% Styling with color-coded phases
+    style Start fill:#1a1a2e,stroke:#16213e,stroke-width:4px,color:#eee
+    style Done fill:#0f3460,stroke:#16213e,stroke-width:4px,color:#eee
+
+    style Research fill:#533483,stroke:#7b68a6,stroke-width:3px,color:#fff
+    style ResReq fill:#2a4494,stroke:#5a7fc7,stroke-width:2px,color:#fff
+    style ResCB fill:#2a4494,stroke:#5a7fc7,stroke-width:2px,color:#fff
+
+    style Plan fill:#1e6f50,stroke:#4fa382,stroke-width:2px,color:#fff
+    style Implement fill:#1e6f50,stroke:#4fa382,stroke-width:2px,color:#fff
+
+    style Validate fill:#b8860b,stroke:#daa520,stroke-width:3px,color:#fff
+
+    style Commit fill:#2f4f4f,stroke:#5a7d7d,stroke-width:2px,color:#fff
+    style Push fill:#2f4f4f,stroke:#5a7d7d,stroke-width:2px,color:#fff
+
+    style CreatePR fill:#4a4a6a,stroke:#7272a8,stroke-width:2px,color:#fff
+    style DescribePR fill:#4a4a6a,stroke:#7272a8,stroke-width:2px,color:#fff
+    style Ready fill:#4a4a6a,stroke:#7272a8,stroke-width:2px,color:#fff
+
+    style Review fill:#8b3a62,stroke:#b85c8a,stroke-width:3px,color:#fff
+    style Feedback fill:#704e3d,stroke:#9d7050,stroke-width:2px,color:#fff
+
+    style Merge fill:#0f5132,stroke:#198754,stroke-width:3px,color:#fff
+```
+
+### For New Features (Greenfield)
 
 ```bash
-# Create feature branch from issue
-git checkout -b feature/42-your-feature-name
+# 1. Create GitHub issue first
+gh issue create --title "Add feature X" --body "Description..."
+# Tip: Ask Claude to help draft the issue title and description
 
-# Do your work using Claude Code commands
-/create_plan #42
-/implement_plan thoughts/plans/2026-02-03-gh-42-your-feature.md
-/validate_plan thoughts/plans/2026-02-03-gh-42-your-feature.md
+# 2. Create feature branch immediately
+git checkout -b feature/42-add-feature-x
 
-# Commit and create PR
+# 3. Research requirements
+/research_requirements #42
+
+# 4. Create implementation plan
+/create_plan thoughts/research/2026-02-03-gh-42-add-feature-x.md
+
+# 5. Implement the plan
+/implement_plan thoughts/plans/2026-02-03-gh-42-add-feature-x.md
+
+# 6. Validate implementation
+/validate_plan thoughts/plans/2026-02-03-gh-42-add-feature-x.md
+
+# 7. Commit changes
 /commit
-git push -u origin feature/42-your-feature-name
+# Tip: Claude will create well-formatted commits following the repository's conventions
+
+# 8. Push feature branch to remote
+git push -u origin feature/42-add-feature-x
+
+# 9. Create draft PR (merges feature branch INTO main)
 gh pr create --base main --draft
+# --base main: Target branch to merge INTO (main is protected, requires PRs)
+# --draft: Keeps PR in draft mode until description is ready
+# Note: Source branch is your current branch (feature/42-add-feature-x)
+# This creates: feature/42-add-feature-x → main
+
+# 10. Generate comprehensive PR description
+/describe_pr
+# - Reads .github/PULL_REQUEST_TEMPLATE.md
+# - Analyzes PR diff and commit history
+# - Generates description following template
+# - Runs verification commands (tests, linting)
+# - Automatically UPDATES the existing draft PR via `gh pr edit`
+
+# 11. Mark PR as ready for review
+gh pr ready
+# Or click "Ready for review" in GitHub UI
+```
+
+### For Existing Codebases (Brownfield)
+
+```bash
+# 1. Create GitHub issue first
+gh issue create --title "Add new endpoint" --body "Description..."
+# Tip: Ask Claude to help draft the issue title and description
+
+# 2. Create feature branch immediately
+git checkout -b feature/7-new-endpoint
+
+# 3. Research the codebase
+/research_codebase #7
+
+# 4. Create implementation plan
+/create_plan thoughts/research/2026-02-03-gh-7-new-endpoint.md
+
+# 5. Implement the plan
+/implement_plan thoughts/plans/2026-02-03-gh-7-new-endpoint.md
+
+# 6. Validate implementation
+/validate_plan thoughts/plans/2026-02-03-gh-7-new-endpoint.md
+
+# 7. Commit changes
+/commit
+# Tip: Claude will create well-formatted commits following the repository's conventions
+
+# 8. Push feature branch to remote
+git push -u origin feature/7-new-endpoint
+
+# 9. Create draft PR (merges feature branch INTO main)
+gh pr create --base main --draft
+# --base main: Target branch to merge INTO (main is protected, requires PRs)
+# --draft: Keeps PR in draft mode until description is ready
+# Note: Source branch is your current branch (feature/7-new-endpoint)
+# This creates: feature/7-new-endpoint → main
+
+# 10. Generate comprehensive PR description
+/describe_pr
+# - Reads .github/PULL_REQUEST_TEMPLATE.md
+# - Analyzes PR diff and commit history
+# - Generates description following template
+# - Runs verification commands (tests, linting)
+# - Automatically UPDATES the existing draft PR via `gh pr edit`
+
+# 11. Mark PR as ready for review
+gh pr ready
+# Or click "Ready for review" in GitHub UI
+```
+
+### Creating a Pull Request
+
+**Option 1: Via CLI**
+
+```bash
+# Create a draft PR (from current feature branch → main)
+gh pr create --base main --title "Your PR title" --body "Description" --draft
+# --base main: Merge INTO main (the protected target branch)
+# Source: Your current feature branch (auto-detected)
+
+# Or create PR ready for review immediately
+gh pr create --base main --title "Your PR title" --body "Description"
+```
+
+**Option 2: Ask Claude Code**
+
+```
+Create a PR for this branch
+```
+
+Claude will use `gh pr create` and prompt you for title and description if needed.
+
+### Using `/describe_pr`
+
+> Implementation: [`.claude/commands/describe_pr.md`](../.claude/commands/describe_pr.md)
+
+Generates comprehensive PR descriptions following this repository's template.
+
+```
 /describe_pr
 ```
 
-**Branch naming convention:**
+**What it does:**
+- Reads your PR template from [`.github/PULL_REQUEST_TEMPLATE.md`](../.github/PULL_REQUEST_TEMPLATE.md)
+- Analyzes the full diff and commit history
+- Runs verification commands (tests, linting) and marks checklist items
+- Generates a thorough description filling all template sections
+- Saves the description to `thoughts/prs/{number}_description.md`
+- Updates the PR directly via `gh pr edit`
+
+**Example workflow:**
+
+```bash
+# 1. Ensure you're on your feature branch
+git checkout feature/42-add-feature-x
+
+# 2. Create draft PR (merges feature branch → main)
+gh pr create --base main --title "Add feature X" --body "WIP" --draft
+# --base main: Target branch to merge INTO
+# Source: Current branch (feature/42-add-feature-x)
+
+# 3. Generate comprehensive description
+/describe_pr
+# Reads .github/PULL_REQUEST_TEMPLATE.md
+# Analyzes diff, runs tests
+# Automatically UPDATES the draft PR
+
+# 4. PR is now updated with full description (still in draft)
+
+# 5. Mark PR as ready for review (two options):
 ```
-feature/<issue-number>-<brief-description>
+
+**Option 1: Via CLI**
+```bash
+gh pr ready <pr-number>
 ```
 
-Examples:
-- `feature/42-add-authentication`
-- `feature/7-configurable-system-prompt`
+**Option 2: Via GitHub UI**
+- Go to your PR page on GitHub
+- Scroll to the bottom of the PR
+- Click the green "Ready for review" button
 
----
+**What it does NOT do:**
+- Create the PR (use `gh pr create` or ask Claude first)
+- Change draft status (PR remains draft until you mark it ready)
+- Merge the PR
+- Complete manual verification steps (leaves those unchecked for you)
 
-## Directory Structure
+### Using @claude in PR Reviews
 
-After creating a project from this template, you'll have this structure:
+After creating your PR, you can @mention Claude in PR comments to get code reviews, architectural feedback, and suggestions. Claude will respond directly in the PR using your Claude Code Max subscription.
+
+**Example comments to try:**
 
 ```
-your-project/
-├── .claude/              # Commands, skills, hooks configuration
-├── .ralph/               # Autonomous workflow state
-├── thoughts/             # Research documents and implementation plans
-│   ├── research/         # Requirements and codebase research
-│   ├── plans/            # Implementation plans
-│   └── prs/              # PR descriptions
-├── docs/                 # Documentation
-│   └── TEMPLATE_INSTRUCTIONS.md
-├── src/                  # YOUR SOURCE CODE (add this)
-├── tests/                # YOUR TESTS (add this)
-└── [your project files]  # YOUR PROJECT STRUCTURE (add this)
+@claude please review this PR
 ```
+Standard review request - Claude will analyze the code and approve or request changes
 
-**What's included:**
-- `.claude/` - Workflow commands and configuration
-- `.ralph/` - Autonomous workflow state tracking
-- `thoughts/` - Research and planning artifacts
-- `docs/` - Template documentation
-
-**What you add:**
-- Your source code (`src/` or your preferred structure)
-- Your tests (`tests/` or your preferred location)
-- Your dependencies (`pyproject.toml`, `package.json`, etc.)
-- Your build/run scripts
-
----
-
-## Using @claude in Pull Requests
-
-After creating PRs, you can @mention Claude in PR comments for code reviews. Claude will respond using your Claude Code Max subscription.
-
-**Example interactions:**
+```
+@claude Please review this PR and approve it or request changes
+```
+Explicit approval/rejection request - useful for autonomous workflows
 
 ```
 @claude Review this PR for code quality and potential issues
 ```
 
 ```
-@claude What do you think about the architecture decisions?
+@claude What do you think about the architecture decisions in this PR?
+```
+
+```
+@claude Suggest improvements to CLAUDE.md based on patterns you see
 ```
 
 ```
@@ -721,22 +958,145 @@ After creating PRs, you can @mention Claude in PR comments for code reviews. Cla
 ```
 
 ```
-@claude Suggest improvements to CLAUDE.md based on patterns you see
+@claude Review this PR with a focus on security concerns
 ```
 
 **What happens:**
 1. You add a comment mentioning @claude
-2. The GitHub Action triggers automatically (see [Setting Up Claude PR Reviews](#setting-up-claude-pr-reviews))
+2. The GitHub Action triggers automatically
 3. Claude reviews your code and responds with feedback
-4. Claude may suggest updates to `CLAUDE.md` for future improvements
+4. Claude may suggest updates to [CLAUDE.md](../CLAUDE.md) for future improvements
 
-This creates a feedback loop where Claude Code improves over time - each PR review can result in better instructions for future sessions.
+**Workflow integration:**
+
+```bash
+# After completing the development workflow (see Step-by-Step Development Workflow):
+# - Implemented plan, committed changes
+# - Pushed feature branch, created draft PR via gh pr create --base main --draft
+# - Ran /describe_pr to generate comprehensive description
+
+# Get Claude's review in the GitHub PR:
+@claude Review this PR for code quality and potential issues
+
+# Claude responds with feedback - see below for handling action items
+```
+
+### Handling @claude Feedback
+
+When @claude reviews your PR and suggests changes, you have two options:
+
+**Option 1: Automated (Recommended)** - Use `/handle_pr_feedback`:
+
+```bash
+/handle_pr_feedback 42
+# Or auto-detect PR from current branch:
+/handle_pr_feedback
+```
+
+This automatically:
+- Fetches @claude's review feedback
+- Updates the implementation plan with "PR Review Updates" section
+- Implements the requested changes
+- Runs tests
+- Commits and pushes
+- Requests re-review from @claude
+
+See [/handle_pr_feedback](../.claude/commands/handle_pr_feedback.md) for details.
+
+> **Why update plans?** Implementation plans serve as living documentation of what was built and why. When @claude's review reveals issues or better approaches, these insights should be captured in the plan so it reflects reality, not just original intent. This is especially important for future reference and understanding the evolution of the implementation.
+
+**Option 2: Manual** - Handle feedback manually:
+
+#### 1. Review Claude's Feedback
+- Read through all comments and suggestions
+- Decide which feedback to address (you're the human - final call is yours)
+- Prioritize critical issues (security, bugs) over suggestions (style, optimizations)
+
+#### 2. Make Changes on the Feature Branch
+Stay on your feature branch and make the recommended changes:
+
+```bash
+# Ensure you're on the correct branch
+git checkout feature/your-branch-name
+
+# Make changes to address feedback
+# Option A: Edit files manually in your editor
+# Option B: Ask Claude Code directly in the CLI:
+#   "Fix the SQL injection issue @claude mentioned in the PR review"
+#   "Address the null check feedback from the PR review"
+```
+
+#### 3. Update the Implementation Plan
+
+Update your plan file to document the changes:
+
+```bash
+# Find your plan file
+ls thoughts/plans/*-gh-<issue-number>-*.md
+
+# Update the plan with PR Review Updates section
+# Add what changed and why based on @claude's feedback
+```
+
+Or ask Claude to update it:
+```
+Update the implementation plan at thoughts/plans/<file>.md to document the PR feedback changes:
+- What @claude suggested
+- What was changed
+- Why it matters
+```
+
+#### 4. Commit and Push Updates
+```bash
+# Commit your changes AND the updated plan
+git add <changed-files> thoughts/plans/<plan-file>.md
+git commit -m "Address @claude feedback: <describe what you fixed>"
+
+# Push to update the PR
+git push
+```
+
+The PR automatically updates with your new commits.
+
+#### 5. (Optional) Ask Claude to Verify
+After making changes, you can ask Claude to verify:
+
+```
+@claude I've addressed your feedback in the latest commit. Can you verify the changes?
+```
+
+#### 5. Iterate Until Ready
+Repeat steps 2-4 until all critical feedback is addressed. Then merge the PR.
+
+**Example interaction:**
+```
+You: @claude Review this PR for security concerns
+
+Claude: Found potential SQL injection in auth.py:42.
+        Recommend using parameterized queries instead of string concatenation.
+
+You: [Makes changes, commits, pushes]
+
+You: @claude I've fixed the SQL injection issue. Please verify.
+
+Claude: ✅ Looks good! The parameterized query properly prevents SQL injection.
+
+You: [Merges PR]
+```
+
+**Important notes:**
+- **Don't create new PRs for feedback** - update the existing branch
+- **Don't squash commits prematurely** - keep feedback commits separate for clarity
+- **Use descriptive commit messages** - reference what feedback you're addressing
+- **Claude sees the full PR history** - it can track what changed between reviews
+
+> **Tip:** Ask Claude to review with [CLAUDE.md](../CLAUDE.md) improvements in mind. This creates a feedback loop where each PR review can make your workflow better over time. When all good, ask Claude to merge the PR.
 
 ---
 
 ## Ralph Autonomous Development
 
-For fully autonomous multi-issue processing, use the `/ralph` command or `ralph-autonomous.sh` shell script.
+For fully autonomous multi-issue processing, use the `ralph-autonomous.sh` shell script. This provides a production-ready autonomous workflow with live monitoring, state management, and retry logic.
 
 ### Using Ralph with Live Monitor
 
@@ -768,20 +1128,41 @@ tmux attach -t ralph-monitor-<session-id>
 
 Ralph automatically processes issues end-to-end:
 
-1. Selects highest priority open issue
-2. Creates research if missing (`/research_requirements`)
-3. Creates plan if missing (`/create_plan`)
-4. Implements the plan (`/implement_plan`)
-5. Validates implementation (`/validate_plan`)
+1. **Selects next issue:**
+   - Filters out issues labeled `ralph-exempt` (reserved for human-only work)
+   - Checks for dependency blocking (skips issues blocked by other issues)
+   - Prioritizes issues with existing plans (`ready-for-dev` label) first
+   - Then selects from remaining open issues
+2. Creates research if missing ([/research_requirements](../.claude/commands/research_requirements.md))
+3. Creates plan if missing ([/create_plan](../.claude/commands/create_plan.md))
+4. Implements the plan ([/implement_plan](../.claude/commands/implement_plan.md))
+5. Validates implementation ([/validate_plan](../.claude/commands/validate_plan.md))
 6. Creates PR if validation passes
-7. Moves to next issue
+7. **Requests @claude review:**
+   - Comments `@claude Please review this PR and approve it or request changes`
+   - Polls for review completion (10 minute timeout)
+   - If APPROVED → proceeds to merge
+   - If CHANGES_REQUESTED → uses [/handle_pr_feedback](../.claude/commands/handle_pr_feedback.md):
+     - Updates implementation plan with "PR Review Updates" section
+     - Implements requested changes
+     - Commits and pushes updates
+     - Requests re-review
+     - Up to 3 iterations, then labels `needs-human-review` if not approved
+   - **Note:** Plan updates ensure documentation reflects reality, not just original intent
+8. **Auto-merges approved PRs:**
+   - Merges with squash and deletes branch
+   - Closes issue with success comment
+9. Moves to next issue
 
 **Prerequisites:**
-- GitHub labels must exist (see label setup in Branch Protection section)
-- Branch protection configured (prevents direct commits to main)
+- GitHub labels must exist - see [GitHub Labels](#github-labels) above
+- Branch protection configured (prevents direct commits to main) - see [Branch Protection Setup](#branch-protection-setup)
 
 **Quality Gate:**
 Ralph only creates commits and PRs for implementations that pass validation. Failed validations are flagged for human review rather than attempting automated fixes.
+
+**Living Documentation:**
+When @claude reviews PRs and requests changes, Ralph updates the implementation plan with a "PR Review Updates" section. This ensures plans remain accurate documentation of what was actually built, including insights discovered during review. Plans evolve with the code, not just capturing original intent.
 
 ### Resetting Ralph State
 
@@ -817,6 +1198,6 @@ After completing this setup:
 1. **Update README.md** - Replace it with your project documentation
 2. **Update CLAUDE.md** - Add project-specific conventions and build commands
 3. **Create your first issue** - Use GitHub issues to track work
-4. **Start the workflow** - Use `/research_requirements` or `/create_plan` to begin
+4. **Start the workflow** - Use [/research_requirements](../.claude/commands/research_requirements.md) or [/create_plan](../.claude/commands/create_plan.md) to begin
 
 See the main [README.md](../README.md) for workflow overview.

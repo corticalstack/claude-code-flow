@@ -19,6 +19,10 @@ source "$SCRIPT_DIR/lib/ralph_feedback.sh"
 readonly MAX_ISSUE_ITERATIONS=10        # Process up to 10 different issues
 readonly MAX_ATTEMPTS_PER_ISSUE=10      # Retry each issue up to 10 times with fresh sessions
 readonly CLAUDE_TIMEOUT_SECONDS=1800    # 30 minutes per phase
+readonly ENABLE_PR_REVIEW=true          # Enable @claude PR reviews before merge
+readonly MAX_REVIEW_ITERATIONS=3        # Max feedback iterations per PR
+readonly PR_REVIEW_TIMEOUT=600          # 10 minutes timeout for review
+readonly PR_REVIEW_POLL_INTERVAL=30     # Check review status every 30 seconds
 readonly ENABLE_PR_AUTO_MERGE=true      # Enable auto-merge after validation passes
 readonly CREATE_DRAFT_PRS=false         # Don't create draft PRs - create ready-to-merge PRs
 readonly RALPH_EXEMPT_LABEL="ralph-exempt"  # Issues with this label will be skipped by Ralph
@@ -749,7 +753,135 @@ EOF
                 gh_add_comment "$ISSUE" "PR created: $PR_URL (attempt $ATTEMPT/$MAX_ATTEMPTS_PER_ISSUE)"
 
                 # ============================================================
-                # PHASE: Merge PR (if auto-merge enabled)
+                # PHASE: PR Review (if enabled)
+                # ============================================================
+                if [ "$ENABLE_PR_REVIEW" = true ]; then
+                    log_phase "PR Review Phase (Attempt $ATTEMPT)"
+                    update_session "$ISSUE" "pr_review"
+                    update_monitor_status "running" "pr_review" "$ISSUE"
+
+                    # Request @claude review
+                    log_info "Requesting @claude review for PR #$PR_NUMBER..."
+                    gh pr comment "$PR_NUMBER" --body "@claude Please review this PR and approve it or request changes"
+
+                    # Poll for review completion
+                    log_info "Polling for review completion (timeout: ${PR_REVIEW_TIMEOUT}s)..."
+                    REVIEW_START_TIME=$(date +%s)
+                    REVIEW_DECISION=""
+                    REVIEW_ITERATION=1
+
+                    while [ $REVIEW_ITERATION -le $MAX_REVIEW_ITERATIONS ]; do
+                        log_info "Review iteration $REVIEW_ITERATION/$MAX_REVIEW_ITERATIONS"
+
+                        POLL_ELAPSED=0
+                        REVIEW_DECISION=""
+
+                        # Poll for review (10 minute timeout, check every 30 seconds)
+                        while [ $POLL_ELAPSED -lt $PR_REVIEW_TIMEOUT ]; do
+                            sleep $PR_REVIEW_POLL_INTERVAL
+                            POLL_ELAPSED=$(($(date +%s) - REVIEW_START_TIME))
+
+                            # Check review status
+                            REVIEW_STATE=$(gh pr view "$PR_NUMBER" --json reviewDecision --jq '.reviewDecision // "PENDING"')
+
+                            log_info "Review status: $REVIEW_STATE (${POLL_ELAPSED}s elapsed)"
+
+                            if [ "$REVIEW_STATE" = "APPROVED" ]; then
+                                REVIEW_DECISION="APPROVED"
+                                log_success "PR approved by @claude!"
+                                break 2  # Exit both loops
+                            elif [ "$REVIEW_STATE" = "CHANGES_REQUESTED" ]; then
+                                REVIEW_DECISION="CHANGES_REQUESTED"
+                                log_info "Changes requested by @claude"
+                                break  # Exit polling loop, handle feedback
+                            fi
+                        done
+
+                        # Handle timeout
+                        if [ -z "$REVIEW_DECISION" ]; then
+                            log_warn "Review timeout after ${PR_REVIEW_TIMEOUT}s"
+                            gh_update_label "$ISSUE" "needs-human-review" "pr-submitted"
+                            gh_add_comment "$ISSUE" "⚠️ @claude review timed out. Needs human review."
+                            REVIEW_DECISION="TIMEOUT"
+                            break
+                        fi
+
+                        # Handle changes requested
+                        if [ "$REVIEW_DECISION" = "CHANGES_REQUESTED" ]; then
+                            log_info "Handling feedback iteration $REVIEW_ITERATION/$MAX_REVIEW_ITERATIONS"
+
+                            # Use /handle_pr_feedback to implement changes
+                            log_info "Invoking /handle_pr_feedback in FRESH Claude session..."
+                            increment_rate_limit
+                            record_api_call
+
+                            FEEDBACK_PROMPT="Execute the /handle_pr_feedback command for PR #$PR_NUMBER.
+
+This is review iteration $REVIEW_ITERATION/$MAX_REVIEW_ITERATIONS for issue #$ISSUE (attempt $ATTEMPT/$MAX_ATTEMPTS_PER_ISSUE).
+
+The command should:
+1. Fetch @claude's review feedback
+2. Update the implementation plan with PR Review Updates
+3. Implement the requested changes
+4. Run tests
+5. Commit and push
+6. Request re-review
+
+After completion, output 'FEEDBACK_HANDLED' if successful."
+
+                            if execute_claude "$CLAUDE_TIMEOUT_SECONDS" "$FEEDBACK_PROMPT" "$(get_issue_log_dir $ISSUE)/pr_feedback_iteration_${REVIEW_ITERATION}_attempt_${ATTEMPT}.log"; then
+                                # Check if feedback was handled
+                                if grep -q "FEEDBACK_HANDLED" "$(get_issue_log_dir $ISSUE)/pr_feedback_iteration_${REVIEW_ITERATION}_attempt_${ATTEMPT}.log"; then
+                                    log_success "Feedback implemented, requesting re-review..."
+
+                                    # Re-request review for next iteration
+                                    gh pr comment "$PR_NUMBER" --body "@claude I've addressed your feedback. Please re-review."
+
+                                    # Reset timer for next poll
+                                    REVIEW_START_TIME=$(date +%s)
+                                    REVIEW_ITERATION=$((REVIEW_ITERATION + 1))
+
+                                    # Continue to next iteration of review loop
+                                    continue
+                                else
+                                    log_error "Feedback handling didn't complete properly"
+                                    save_attempt_feedback "$ISSUE" "$ATTEMPT" "pr_feedback" "failed" "Failed to handle PR feedback properly" ""
+                                    gh_update_label "$ISSUE" "needs-human-review" "pr-submitted"
+                                    gh_add_comment "$ISSUE" "⚠️ Failed to handle @claude feedback. Needs human review."
+                                    break
+                                fi
+                            else
+                                log_error "Failed to execute /handle_pr_feedback"
+                                save_attempt_feedback "$ISSUE" "$ATTEMPT" "pr_feedback" "failed" "Failed to execute handle_pr_feedback command" ""
+                                gh_update_label "$ISSUE" "needs-human-review" "pr-submitted"
+                                gh_add_comment "$ISSUE" "⚠️ Failed to process @claude feedback. Needs human review."
+                                break
+                            fi
+                        fi
+                    done
+
+                    # Check if we exhausted iterations without approval
+                    if [ "$REVIEW_DECISION" = "CHANGES_REQUESTED" ] && [ $REVIEW_ITERATION -gt $MAX_REVIEW_ITERATIONS ]; then
+                        log_warn "Exhausted review iterations ($MAX_REVIEW_ITERATIONS) without approval"
+                        gh_update_label "$ISSUE" "needs-human-review" "pr-submitted"
+                        gh_add_comment "$ISSUE" "⚠️ PR still has requested changes after $MAX_REVIEW_ITERATIONS iterations. Needs human review."
+                        REVIEW_DECISION="NEEDS_HUMAN"
+                    fi
+
+                    # Only proceed to merge if approved
+                    if [ "$REVIEW_DECISION" != "APPROVED" ]; then
+                        log_info "PR not approved, skipping auto-merge. Decision: $REVIEW_DECISION"
+                        mark_issue_complete "$ISSUE"
+                        increment_successful
+                        add_history_entry "$ISSUE" "complete" "needs_review" "PR created but needs human review (attempt $ATTEMPT)"
+                        ISSUE_SUCCEEDED=true
+                        gh_reset_to_main
+                        break  # Exit retry loop, move to next issue
+                    fi
+                fi
+
+                # ============================================================
+                # PHASE: Merge PR (if auto-merge enabled and review approved)
                 # ============================================================
                 if [ "$ENABLE_PR_AUTO_MERGE" = true ]; then
                     log_phase "Merge Phase (Attempt $ATTEMPT)"
@@ -763,7 +895,7 @@ EOF
                         gh_close_issue "$ISSUE" "✅ Completed and merged via PR #$PR_NUMBER
 
 Succeeded on attempt $ATTEMPT/$MAX_ATTEMPTS_PER_ISSUE
-Autonomous cycle: Research → Plan → Implement → Validate → Merge
+Autonomous cycle: Research → Plan → Implement → Validate → Review → Merge
 
 ---
 🤖 Generated by Ralph Wiggum autonomous loop"
