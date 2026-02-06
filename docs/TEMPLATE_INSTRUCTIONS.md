@@ -20,6 +20,13 @@ This guide walks you through setting up a project created from the `claude-code-
 - [Command Reference](#command-reference)
 - [Step-by-Step Development Workflow](#step-by-step-development-workflow)
 - [Ralph Autonomous Development](#ralph-autonomous-development)
+  - [How Ralph Works](#how-ralph-works)
+  - [How Ralph Prioritizes Issues](#how-ralph-prioritizes-issues)
+  - [Using Ralph with Live Monitor](#using-ralph-with-live-monitor)
+  - [Dry-Run Mode](#dry-run-mode)
+  - [Reset Commands](#reset-commands)
+  - [Dashboard Theme & Appearance](#dashboard-theme--appearance)
+  - [Why Custom Command Over Official Plugin?](#why-custom-command-over-official-plugin)
 - [Next Steps](#next-steps)
 
 ---
