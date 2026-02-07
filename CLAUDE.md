@@ -46,7 +46,7 @@ Follow the **Research → Plan → Implement → Validate** pattern:
 
 2. **Plan before coding**: Create implementation plans
    - `/create_plan <GitHub issue URL>`
-   - Plans live in [`thoughts/plans/`](thoughts/plans/)
+   - Plans live in [`flow/plans/`](flow/plans/)
 
 3. **Implement with verification**: Execute plans phase by phase
    - `/implement_plan <plan path>`

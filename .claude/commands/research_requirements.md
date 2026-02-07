@@ -77,7 +77,7 @@ Run multiple agents in parallel for different research areas. Example:
 - flow-locator: "Find any existing research or decisions about [relevant topics]"
 ```
 
-**Note on thoughts agents**: Always include these agents. The `flow/` directory accumulates historical context over time. For early research cycles, agents may report "no prior research found" - this is expected and still useful information.
+**Note on flow agents**: Always include these agents. The `flow/` directory accumulates historical context over time. For early research cycles, agents may report "no prior research found" - this is expected and still useful information.
 
 ### Step 4: Wait and Synthesize
 
@@ -222,7 +222,7 @@ Please review the research document. Once you've resolved any open questions, yo
 - **DO NOT pollute main context** - use sub-agents for heavy research
 - **DO NOT proceed to planning automatically** - wait for user approval
 - **DO NOT use placeholder values** - gather real metadata before writing
-- **DO NOT skip thoughts agents** - always include them, they handle empty results gracefully
+- **DO NOT skip flow agents** - always include them, they handle empty results gracefully
 
 ## References
 

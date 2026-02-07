@@ -450,14 +450,14 @@ your-project/
 
 You can choose whether to track `flow/` in version control:
 
-**Option A: Track thoughts for team collaboration**
+**Option A: Track flow for team collaboration**
 ```bash
-# Add and commit the thoughts directory
+# Add and commit the flow directory
 git add flow/
-git commit -m "Add thoughts directory for workflow artifacts"
+git commit -m "Add flow directory for workflow artifacts"
 ```
 
-**Option B: Exclude thoughts from version control**
+**Option B: Exclude flow from version control**
 ```bash
 # Add to .gitignore
 echo "flow/" >> .gitignore
