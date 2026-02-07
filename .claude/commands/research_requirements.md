@@ -64,8 +64,8 @@ Use these agent types concurrently to research different aspects:
 | Agent | Purpose |
 |-------|---------|
 | `web-search-researcher` | Technology options, best practices, similar projects |
-| `thoughts-locator` | Find existing research in thoughts/ directory |
-| `thoughts-analyzer` | Extract insights from relevant historical docs (if locator finds any) |
+| `flow-locator` | Find existing research in flow/ directory |
+| `flow-analyzer` | Extract insights from relevant historical docs (if locator finds any) |
 
 Run multiple agents in parallel for different research areas. Example:
 
@@ -74,10 +74,10 @@ Run multiple agents in parallel for different research areas. Example:
 - web-search-researcher: "Research [technology domain 1] options for [use case]"
 - web-search-researcher: "Research [technology domain 2] best practices"
 - web-search-researcher: "Find similar open source projects for [description]"
-- thoughts-locator: "Find any existing research or decisions about [relevant topics]"
+- flow-locator: "Find any existing research or decisions about [relevant topics]"
 ```
 
-**Note on thoughts agents**: Always include these agents. The `thoughts/` directory accumulates historical context over time. For early research cycles, agents may report "no prior research found" - this is expected and still useful information.
+**Note on thoughts agents**: Always include these agents. The `flow/` directory accumulates historical context over time. For early research cycles, agents may report "no prior research found" - this is expected and still useful information.
 
 ### Step 4: Wait and Synthesize
 
@@ -98,7 +98,7 @@ Collect metadata for the output document:
 
 Generate filename using this convention:
 ```
-thoughts/research/YYYY-MM-DD-gh-[issue-number]-[description].md
+flow/research/YYYY-MM-DD-gh-[issue-number]-[description].md
 ```
 
 - `YYYY-MM-DD` - today's date
@@ -106,8 +106,8 @@ thoughts/research/YYYY-MM-DD-gh-[issue-number]-[description].md
 - `[description]` - brief kebab-case description
 
 Examples:
-- With issue: `thoughts/research/2026-01-12-gh-1-research-requirements-command.md`
-- Without issue: `thoughts/research/2026-01-12-dotfile-manager-requirements.md`
+- With issue: `flow/research/2026-01-12-gh-1-research-requirements-command.md`
+- Without issue: `flow/research/2026-01-12-dotfile-manager-requirements.md`
 
 ### Step 6: Generate Research Document
 
@@ -162,7 +162,7 @@ status: complete
 - [Project/Library Name](url) - Description and relevance
 - [Another Resource](url) - Description
 
-## Historical Context (from thoughts/)
+## Historical Context (from flow/)
 [Relevant past research or decisions, or "No prior research found" for early cycles]
 
 ## Open Questions
@@ -185,7 +185,7 @@ After writing the document:
 2. **Present summary to user**:
 ```
 I've completed the requirements research and written the findings to:
-`thoughts/research/[filename].md`
+`flow/research/[filename].md`
 
 Key findings:
 - [Most important finding 1]
@@ -228,4 +228,4 @@ Please review the research document. Once you've resolved any open questions, yo
 
 - Pattern reference: [`.claude/commands/research_codebase.md`](.claude/commands/research_codebase.md)
 - Workflow concepts: [`docs/claude-code-workflow-concepts.md`](docs/claude-code-workflow-concepts.md)
-- Output directory: `thoughts/research/`
+- Output directory: `flow/research/`

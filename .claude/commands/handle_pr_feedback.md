@@ -52,20 +52,20 @@ gh api repos/:owner/:repo/pulls/<pr-number>/comments
 ```bash
 # Look for plan file related to this PR
 # Strategy 1: Check PR description for plan reference
-gh pr view <pr-number> --json body | grep -o "thoughts/plans/[^)]*"
+gh pr view <pr-number> --json body | grep -o "flow/plans/[^)]*"
 
 # Strategy 2: Get issue number from PR title/body
 gh pr view <pr-number> --json title,body | grep -o "#[0-9]*" | head -1
 
 # Then find plan:
-ls thoughts/plans/*-gh-<issue-number>-*.md 2>/dev/null
+ls flow/plans/*-gh-<issue-number>-*.md 2>/dev/null
 
 # Strategy 3: Check commits for plan references
-gh pr view <pr-number> --json commits | grep -o "thoughts/plans/[^)]*"
+gh pr view <pr-number> --json commits | grep -o "flow/plans/[^)]*"
 ```
 
 **If plan not found:**
-- List all recent plans: `ls -t thoughts/plans/*.md | head -5`
+- List all recent plans: `ls -t flow/plans/*.md | head -5`
 - Ask user which plan to update
 - If user says "none" or "skip", proceed without plan update (just implement changes)
 
@@ -171,7 +171,7 @@ EOF
 
 **Also commit the updated plan:**
 ```bash
-git add thoughts/plans/<plan-file>.md
+git add flow/plans/<plan-file>.md
 git commit --amend --no-edit
 ```
 
@@ -211,7 +211,7 @@ Show the user:
 ```
 ✅ PR Feedback Handled: PR #<number>
 
-📋 Plan Updated: thoughts/plans/<plan-file>.md
+📋 Plan Updated: flow/plans/<plan-file>.md
    - Added PR Review Updates section
    - Documented <N> changes requested
 
@@ -272,7 +272,7 @@ Changes requested:
 2. Bug: Missing null check in user_validator.py:15
 3. Style: Use list comprehension in data_processor.py:88
 
-📋 Updating plan: thoughts/plans/2026-02-06-gh-42-add-auth.md
+📋 Updating plan: flow/plans/2026-02-06-gh-42-add-auth.md
 ✅ Plan updated with PR Review Updates section
 
 🔧 Implementing changes...

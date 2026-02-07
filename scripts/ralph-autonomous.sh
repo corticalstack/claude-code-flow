@@ -406,7 +406,7 @@ while [ "$ISSUE_ITERATION" -lt "$MAX_ISSUE_ITERATIONS" ]; do
                     record_api_call
 
                     # FRESH CLAUDE SESSION - No prior context
-                    PROMPT="Execute the /research_codebase command for GitHub issue #$ISSUE. After completion, verify the research document was created in thoughts/research/ and output 'RESEARCH_COMPLETE'."
+                    PROMPT="Execute the /research_codebase command for GitHub issue #$ISSUE. After completion, verify the research document was created in flow/research/ and output 'RESEARCH_COMPLETE'."
 
                     if execute_claude "$CLAUDE_TIMEOUT_SECONDS" "$PROMPT" "$(get_issue_log_dir $ISSUE)/research_attempt_${ATTEMPT}.log"; then
                         log_success "Research skill completed"

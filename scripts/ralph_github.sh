@@ -128,7 +128,7 @@ EOF
 gh_check_research_exists() {
     local issue=$1
 
-    local research_file=$(find thoughts/research -name "*-gh-$issue-*.md" 2>/dev/null | head -1)
+    local research_file=$(find flow/research -name "*-gh-$issue-*.md" 2>/dev/null | head -1)
 
     if [ -n "$research_file" ]; then
         echo "$research_file"
@@ -142,7 +142,7 @@ gh_check_research_exists() {
 gh_check_plan_exists() {
     local issue=$1
 
-    local plan_file=$(find thoughts/plans -name "*-gh-$issue-*.md" 2>/dev/null | head -1)
+    local plan_file=$(find flow/plans -name "*-gh-$issue-*.md" 2>/dev/null | head -1)
 
     if [ -n "$plan_file" ]; then
         echo "$plan_file"

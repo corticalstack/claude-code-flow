@@ -395,7 +395,7 @@ your-project/
 │   ├── state/              # Ralph autonomous state tracking
 │   ├── active/             # Per-issue logs and feedback
 │   └── archived/           # Archived issue logs
-├── thoughts/
+├── flow/
 │   ├── research/           # Research output documents (empty)
 │   ├── plans/              # Implementation plans (empty)
 │   └── prs/                # PR descriptions (empty)
@@ -448,19 +448,19 @@ your-project/
 
 ### Step 2: Git Configuration (Optional)
 
-You can choose whether to track `thoughts/` in version control:
+You can choose whether to track `flow/` in version control:
 
 **Option A: Track thoughts for team collaboration**
 ```bash
 # Add and commit the thoughts directory
-git add thoughts/
+git add flow/
 git commit -m "Add thoughts directory for workflow artifacts"
 ```
 
 **Option B: Exclude thoughts from version control**
 ```bash
 # Add to .gitignore
-echo "thoughts/" >> .gitignore
+echo "flow/" >> .gitignore
 ```
 
 ---
@@ -794,13 +794,13 @@ git checkout -b feature/42-add-feature-x
 /research_requirements #42
 
 # 4. Create implementation plan
-/create_plan thoughts/research/2026-02-03-gh-42-add-feature-x.md
+/create_plan flow/research/2026-02-03-gh-42-add-feature-x.md
 
 # 5. Implement the plan
-/implement_plan thoughts/plans/2026-02-03-gh-42-add-feature-x.md
+/implement_plan flow/plans/2026-02-03-gh-42-add-feature-x.md
 
 # 6. Validate implementation
-/validate_plan thoughts/plans/2026-02-03-gh-42-add-feature-x.md
+/validate_plan flow/plans/2026-02-03-gh-42-add-feature-x.md
 
 # 7. Commit changes
 /commit
@@ -843,13 +843,13 @@ git checkout -b feature/7-new-endpoint
 /research_codebase #7
 
 # 4. Create implementation plan
-/create_plan thoughts/research/2026-02-03-gh-7-new-endpoint.md
+/create_plan flow/research/2026-02-03-gh-7-new-endpoint.md
 
 # 5. Implement the plan
-/implement_plan thoughts/plans/2026-02-03-gh-7-new-endpoint.md
+/implement_plan flow/plans/2026-02-03-gh-7-new-endpoint.md
 
 # 6. Validate implementation
-/validate_plan thoughts/plans/2026-02-03-gh-7-new-endpoint.md
+/validate_plan flow/plans/2026-02-03-gh-7-new-endpoint.md
 
 # 7. Commit changes
 /commit
@@ -915,7 +915,7 @@ Generates comprehensive PR descriptions following this repository's template.
 - Analyzes the full diff and commit history
 - Runs verification commands (tests, linting) and marks checklist items
 - Generates a thorough description filling all template sections
-- Saves the description to `thoughts/prs/{number}_description.md`
+- Saves the description to `flow/prs/{number}_description.md`
 - Updates the PR directly via `gh pr edit`
 
 **Example workflow:**
@@ -1063,7 +1063,7 @@ Update your plan file to document the changes:
 
 ```bash
 # Find your plan file
-ls thoughts/plans/*-gh-<issue-number>-*.md
+ls flow/plans/*-gh-<issue-number>-*.md
 
 # Update the plan with PR Review Updates section
 # Add what changed and why based on @claude's feedback
@@ -1071,7 +1071,7 @@ ls thoughts/plans/*-gh-<issue-number>-*.md
 
 Or ask Claude to update it:
 ```
-Update the implementation plan at thoughts/plans/<file>.md to document the PR feedback changes:
+Update the implementation plan at flow/plans/<file>.md to document the PR feedback changes:
 - What @claude suggested
 - What was changed
 - Why it matters
@@ -1080,7 +1080,7 @@ Update the implementation plan at thoughts/plans/<file>.md to document the PR fe
 #### 4. Commit and Push Updates
 ```bash
 # Commit your changes AND the updated plan
-git add <changed-files> thoughts/plans/<plan-file>.md
+git add <changed-files> flow/plans/<plan-file>.md
 git commit -m "Address @claude feedback: <describe what you fixed>"
 
 # Push to update the PR
@@ -1429,8 +1429,8 @@ tmux attach -t ralph-monitor-<session-id>
 # [DRY RUN] Would invoke /research_codebase for issue #42
 # [DRY RUN] Would invoke /create_plan for issue #42
 # [DRY RUN] Would reset to main and create branch: feature/42-add-feature-x
-# [DRY RUN] Would invoke /implement_plan for thoughts/plans/...
-# [DRY RUN] Would invoke /validate_plan for thoughts/plans/...
+# [DRY RUN] Would invoke /implement_plan for flow/plans/...
+# [DRY RUN] Would invoke /validate_plan for flow/plans/...
 # [DRY RUN] Would commit changes and create PR
 ```
 
@@ -1609,7 +1609,7 @@ This template uses a **custom command** instead. Here's why:
 | **Integration** | Generic | Uses YOUR GitHub labels, paths, existing commands |
 | **Workflow** | Standalone | Orchestrates `/research_requirements` → `/create_plan` → `/implement_plan` → `/validate_plan` |
 | **Quality Gates** | Unknown | Validation before commits, fails gracefully |
-| **Artifacts** | Unknown | Creates `thoughts/research/` and `thoughts/plans/` documents |
+| **Artifacts** | Unknown | Creates `flow/research/` and `flow/plans/` documents |
 | **Customization** | Use as-is | Modify to match your workflow |
 | **Maintenance** | Anthropic controls updates | You control changes, version controlled in your repo |
 ---

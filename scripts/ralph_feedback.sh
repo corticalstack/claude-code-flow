@@ -123,7 +123,7 @@ Based on previous failures, create a plan that addresses the issues encountered.
 
     base_prompt="$base_prompt
 
-After completion, verify the plan document was created in thoughts/plans/ and output 'PLAN_COMPLETE'."
+After completion, verify the plan document was created in flow/plans/ and output 'PLAN_COMPLETE'."
 
     echo "$base_prompt"
 }

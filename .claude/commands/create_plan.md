@@ -83,7 +83,7 @@ Then wait for the user's input.
    - Note any linked issues, PRs, or references mentioned
 
 2. **Read all mentioned files immediately and FULLY**:
-   - Research documents (e.g., `thoughts/research/...`)
+   - Research documents (e.g., `flow/research/...`)
    - Related implementation plans
    - Any JSON/data files mentioned
    - **IMPORTANT**: Use the Read tool WITHOUT limit/offset parameters to read entire files
@@ -95,7 +95,7 @@ Then wait for the user's input.
 
    - Use the **codebase-locator** agent to find all files related to the task
    - Use the **codebase-analyzer** agent to understand how the current implementation works
-   - If relevant, use the **thoughts-locator** agent to find any existing thoughts documents about this feature
+   - If relevant, use the **flow-locator** agent to find any existing thoughts documents about this feature
 
    These agents will:
    - Find relevant source files, configs, and tests
@@ -152,8 +152,8 @@ After getting initial clarifications:
    - **codebase-pattern-finder** - To find similar features we can model after
 
    **For historical context:**
-   - **thoughts-locator** - To find any research, plans, or decisions about this area
-   - **thoughts-analyzer** - To extract key insights from the most relevant documents
+   - **flow-locator** - To find any research, plans, or decisions about this area
+   - **flow-analyzer** - To extract key insights from the most relevant documents
 
    Each agent knows how to:
    - Find the right files and code patterns
@@ -208,14 +208,14 @@ Once aligned on approach:
 
 After structure approval:
 
-1. **Write the plan** to `thoughts/plans/YYYY-MM-DD-gh-[issue]-[description].md`
+1. **Write the plan** to `flow/plans/YYYY-MM-DD-gh-[issue]-[description].md`
    - Format: `YYYY-MM-DD-gh-[issue]-[description].md` where:
      - YYYY-MM-DD is today's date
      - gh-[issue] is the GitHub issue number (omit if no issue)
      - description is a brief kebab-case description
    - Examples:
-     - With issue: `thoughts/plans/2026-01-12-gh-1-research-requirements-command.md`
-     - Without issue: `thoughts/plans/2026-01-12-improve-error-handling.md`
+     - With issue: `flow/plans/2026-01-12-gh-1-research-requirements-command.md`
+     - Without issue: `flow/plans/2026-01-12-improve-error-handling.md`
 2. **Use this template structure**:
 
 ````markdown
@@ -333,7 +333,7 @@ After structure approval:
 ## References
 
 - GitHub issue: https://github.com/[owner]/[repo]/issues/[number]
-- Related research: `thoughts/research/[relevant].md`
+- Related research: `flow/research/[relevant].md`
 - Similar implementation: `[file:line]`
 ````
 
@@ -342,7 +342,7 @@ After structure approval:
 1. **Present the draft plan location**:
    ```
    I've created the initial implementation plan at:
-   `thoughts/plans/YYYY-MM-DD-gh-X-description.md`
+   `flow/plans/YYYY-MM-DD-gh-X-description.md`
 
    Please review it and let me know:
    - Are the phases properly scoped?

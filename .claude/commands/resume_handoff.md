@@ -13,19 +13,19 @@ When this command is invoked:
 1. **If the path to a handoff document was provided**:
    - If a handoff document path was provided as a parameter, skip the default message
    - Immediately read the handoff document FULLY
-   - Immediately read any research or plan documents that it links to under `thoughts/plans` or `thoughts/research`. Do NOT use a sub-agent to read these critical files.
+   - Immediately read any research or plan documents that it links to under `flow/plans` or `flow/research`. Do NOT use a sub-agent to read these critical files.
    - Begin the analysis process by ingesting relevant context from the handoff document, reading additional files it mentions
    - Then propose a course of action to the user and confirm, or ask for clarification on direction.
 
 2. **If a GitHub issue number (like gh-123 or just 123) was provided**:
-   - Locate the most recent handoff document for the issue at `thoughts/handoffs/gh-<number>/`
+   - Locate the most recent handoff document for the issue at `flow/handoffs/gh-<number>/`
    - **List this directory's contents.**
    - There may be zero, one or multiple files in the directory.
    - **If there are zero files in the directory, or the directory does not exist**: tell the user: "I can't find a handoff document for that issue. Can you provide a path to it?"
    - **If there is only one file in the directory**: proceed with that handoff
    - **If there are multiple files in the directory**: using the date and time specified in the file name (format: `YYYY-MM-DD_HH-MM-SS`), proceed with the _most recent_ handoff document.
    - Immediately read the handoff document FULLY
-   - Immediately read any research or plan documents that it links to under `thoughts/plans` or `thoughts/research`; do NOT use a sub-agent to read these critical files.
+   - Immediately read any research or plan documents that it links to under `flow/plans` or `flow/research`; do NOT use a sub-agent to read these critical files.
    - Begin the analysis process by ingesting relevant context from the handoff document, reading additional files it mentions
    - Then propose a course of action to the user and confirm, or ask for clarification on direction.
 
@@ -36,7 +36,7 @@ I'll help you resume work from a handoff document.
 Which handoff would you like to resume from?
 
 Tip: You can invoke this command directly with:
-- A handoff path: `/resume_handoff thoughts/handoffs/gh-123/2025-01-08_description.md`
+- A handoff path: `/resume_handoff flow/handoffs/gh-123/2025-01-08_description.md`
 - A GitHub issue number: `/resume_handoff 123` or `/resume_handoff gh-123`
 ```
 
@@ -198,7 +198,7 @@ Then wait for the user's input.
 ## Example Interaction Flow
 
 ```
-User: /resume_handoff thoughts/handoffs/gh-42/2025-01-08_handoff.md
+User: /resume_handoff flow/handoffs/gh-42/2025-01-08_handoff.md
 Assistant: Let me read and analyze that handoff document...
 
 [Reads handoff completely]
