@@ -721,58 +721,105 @@ The workflow provides these commands organized by phase:
 
 ## Claude Memory System
 
-Claude Code maintains a **persistent memory** system that allows Claude to learn from experience across conversations. Memory files are stored in `~/.claude/projects/<project-path>/memory/` and are automatically loaded into Claude's system prompt in future sessions.
+Claude Code has two types of persistent memory across sessions:
 
-### MEMORY.md
+1. **Auto memory**: Claude automatically saves learnings, patterns, and insights as it works
+2. **CLAUDE.md files**: User-written instructions and preferences for Claude to follow
 
-The main memory file that persists learnings across all conversations in this project:
+This section focuses on **auto memory** - Claude's self-maintained notes about your project.
 
-- **Location**: `~/.claude/projects/<project-path>/memory/MEMORY.md`
-- **Access**: Use Read/Edit/Write tools on this file path
-- **Limit**: Keep under 200 lines (longer content truncated)
-- **Purpose**: Record critical lessons, patterns, and gotchas that should inform all future work
+### Auto Memory Overview
 
-**Example use case**: After encountering issues during the thoughts→flow rename operation, we documented:
-- Always use feature branches (never work directly on main)
-- Use multiple grep patterns for find/replace operations (not just paths)
+**Location**: `~/.claude/projects/<project>/memory/`
+
+Auto memory is where Claude records what it learns during sessions - patterns it discovers, solutions to problems, architectural insights, and your preferences. Unlike CLAUDE.md (which contains instructions you write), auto memory contains notes Claude writes for itself.
+
+**Structure**:
+```
+~/.claude/projects/<project>/memory/
+├── MEMORY.md              # Index loaded into system prompt (200 lines max)
+├── rename-operations.md   # Detailed topic file
+└── debugging.md           # Another topic file
+```
+
+### How It Works
+
+- **MEMORY.md**: First 200 lines loaded into Claude's system prompt at the start of every session
+- **Topic files**: Detailed notes (e.g., `debugging.md`, `patterns.md`) loaded on demand when Claude needs them
+- **Automatic**: Claude reads and writes these files during your session as it learns
+
+### The `/memory` Command
+
+**Open memory files for editing:**
+```bash
+/memory
+```
+
+This opens a file selector showing all your memory files (MEMORY.md, topic files, and CLAUDE.md files). Select one to open it in your system's default editor for viewing or editing.
+
+**When to use**:
+- Review what Claude has learned
+- Organize or refine auto memory content
+- Add important learnings manually
+- Every few weeks to keep memory current
+
+### Real Example: Lessons from Rename Operation
+
+After encountering issues during the thoughts→flow directory rename, we documented critical lessons in MEMORY.md:
+
+**What we learned:**
+- ⚠️ Always use feature branches (never work directly on main)
+- Use multiple grep patterns for find/replace (not just paths with slashes)
 - Run comprehensive verification BEFORE committing (not after)
 - Git stash doesn't preserve renames properly
 
-These lessons are now permanently in Claude's system prompt for this project, preventing the same mistakes in future sessions.
+**Impact**: These lessons are now permanently in Claude's system prompt for this project, preventing the same mistakes in future sessions.
 
-### Topic-Specific Memory Files
-
-For detailed information that would exceed the 200-line limit, create separate topic files:
-
-- **Example**: `memory/rename-operations.md` - Detailed checklist for rename operations
-- **Link from MEMORY.md**: Keep MEMORY.md concise and link to detailed topic files
-- **Organization**: Organize by topic, not chronologically
+**Supporting detail**: Created `memory/rename-operations.md` with a detailed 257-line checklist for future rename operations, linked from MEMORY.md.
 
 ### When to Update Memory
 
-Add to memory when you:
-- ✅ Encounter a significant mistake with clear lessons learned
-- ✅ Discover a non-obvious pattern or constraint in the codebase
-- ✅ Find a solution to a tricky problem that could recur
-- ✅ Identify a workflow improvement or process refinement
+Claude updates memory automatically, but you can also tell Claude explicitly:
 
-Don't add to memory:
-- ❌ Obvious or well-documented information
-- ❌ Project-specific details that belong in CLAUDE.md
+**Good for memory:**
+- ✅ "Remember that we use pnpm, not npm"
+- ✅ "Save to memory that API tests require a local Redis instance"
+- ✅ Significant mistakes with clear lessons learned
+- ✅ Non-obvious patterns or constraints discovered
+- ✅ Solutions to tricky problems that could recur
+
+**Not for memory (use CLAUDE.md instead):**
+- ❌ Project instructions or coding standards (use project CLAUDE.md)
+- ❌ Team-shared conventions (use `.claude/rules/`)
 - ❌ Temporary workarounds that will be fixed
-- ❌ Personal preferences without clear rationale
+- ❌ Obvious or well-documented information
 
-### Editing Memory
+### Memory vs CLAUDE.md
+
+| Feature | Auto Memory (MEMORY.md) | CLAUDE.md |
+|---------|------------------------|-----------|
+| **Purpose** | Claude's self-maintained notes | User-written instructions |
+| **Location** | `~/.claude/projects/<project>/memory/` | `./CLAUDE.md` or `./.claude/CLAUDE.md` |
+| **Shared** | Just you (per project) | Team (via git) or personal |
+| **Content** | Learnings, patterns, insights | Rules, preferences, standards |
+| **Updated by** | Claude automatically (or manually via `/memory`) | You (manually) |
+| **Loaded** | First 200 lines of MEMORY.md | Full file at startup |
+
+### Best Practices
+
+- **Keep MEMORY.md concise**: Under 200 lines (content beyond is not loaded)
+- **Use topic files**: Move detailed notes to separate files (e.g., `debugging.md`)
+- **Link from MEMORY.md**: Reference topic files so Claude knows what's available
+- **Review periodically**: Use `/memory` every few weeks to organize and update
+- **Be specific**: "Use 2-space indentation" > "Format code properly"
+
+### Enabling Auto Memory
+
+Auto memory is being rolled out gradually. If you don't see it yet, you can opt in:
 
 ```bash
-# View current memory
-cat ~/.claude/projects/<project-path>/memory/MEMORY.md
-
-# Edit in conversation
-# Simply use the Edit or Write tool with the full path
+export CLAUDE_CODE_DISABLE_AUTO_MEMORY=0  # Force on
 ```
-
-Claude can read and update memory files during any conversation. Changes are immediately reflected and will be loaded in the next session.
 
 ---
 
