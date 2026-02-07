@@ -15,10 +15,19 @@ This is an **absolute requirement** with **NO EXCEPTIONS**:
 - **ALWAYS create a feature branch** before making ANY code changes
 - **NEVER commit directly to main** - all changes must go through pull requests
 - **Feature branch naming**: Use descriptive names like `feature/<issue-number>-<brief-description>` or `bugfix/<issue-number>-<brief-description>`
-- **Before starting ANY implementation**:
+- **Before starting ANY workflow step** (research, planning, implementation, validation, etc.):
   1. Check current branch with `git branch --show-current`
   2. If on main, **IMMEDIATELY** create a feature branch: `git checkout -b feature/<name>`
   3. Only proceed with changes once on a feature branch
+
+**This applies to ALL workflow commands:**
+- `/research_requirements` - creates markdown files in flow/research/
+- `/research_codebase` - creates markdown files in flow/research/
+- `/create_plan` - creates markdown files in flow/plans/
+- `/implement_plan` - creates/modifies code, tests, and other files
+- `/validate_plan` - may modify files during validation fixes
+- `/describe_pr` - creates markdown files in flow/prs/
+- **ALL of these generate artifacts and must be done on a feature branch**
 
 **Why this matters:**
 - Main branch must always remain stable and deployable
