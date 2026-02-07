@@ -45,6 +45,83 @@ Phase N: [Name]
 
 Tests provide Claude with a clear, verifiable target. Without tests, there's no way to know if the implementation is correct.
 
+## Special Considerations for Rename Operations
+
+When planning rename operations (directories, files, variables, modules, etc.), be **extremely thorough** in identifying all reference types:
+
+### Research Phase Requirements
+
+For rename operations, the research phase MUST search for multiple pattern variations:
+
+```bash
+# Path references (with slash)
+grep -rn "oldname/" .
+
+# Standalone word references (word boundaries)
+grep -rn "\boldname\b" .
+
+# Hyphenated compounds
+grep -rn "oldname-" .
+
+# Descriptive text (with trailing space)
+grep -rn "oldname " .
+
+# Case-insensitive search for variations
+grep -rin "oldname" . | head -100
+```
+
+### Plan Specification Requirements
+
+Rename operation plans MUST explicitly enumerate ALL reference types found:
+
+**Required in "Current State Analysis":**
+- ✅ **Path references**: `oldname/subdir/file.txt`
+- ✅ **Descriptive text**: "oldname directory", "oldname documents", "oldname agents"
+- ✅ **Compound names**: `oldname-component`, `oldname_function`
+- ✅ **Configuration**: JSON/YAML/TOML key names or values
+- ✅ **Documentation examples**: Commit messages, tutorials, READMEs
+- ✅ **Comments**: Code comments mentioning the old name
+- ✅ **Import statements**: `from oldname import`, `require('oldname')`
+
+**Required in "Implementation Approach":**
+
+State the EXACT patterns to be used for replacement:
+```
+Phase 1: Physical Renames
+  - Use `git mv` for files/directories to preserve history
+
+Phase 2: Content Updates
+  - Replace "oldname/" → "newname/" (path references)
+  - Replace "oldname " → "newname " (descriptive text with space)
+  - Replace "oldname-" → "newname-" (hyphenated compounds)
+  - Replace "\boldname\b" → "newname" (word boundaries)
+  - Manual review of case variations (OldName, OLDNAME, etc.)
+```
+
+**Required in "Success Criteria":**
+
+Include comprehensive verification commands that check for ALL patterns:
+```bash
+# Automated Verification:
+- [ ] No path references: `grep -r "oldname/" . --exclude-dir=.git | grep -v "plan\|research" | wc -l` returns 0
+- [ ] No descriptive text: `grep -r "oldname " . --exclude-dir=.git | grep -v "plan\|research" | wc -l` returns 0
+- [ ] No hyphenated: `grep -r "oldname-" . --exclude-dir=.git | grep -v "plan\|research" | wc -l` returns 0
+- [ ] No word boundary matches: `grep -r "\boldname\b" . --exclude-dir=.git | grep -v "plan\|research" | wc -l` returns 0
+- [ ] New name exists: `grep -r "newname" . --exclude-dir=.git | wc -l` returns > 0
+```
+
+### Common Pitfalls to Avoid
+
+❌ **Don't use narrow patterns**: `s/oldname\//newname\//g` only catches paths with slashes
+✅ **Use comprehensive patterns**: Document all pattern types and verify each one
+
+❌ **Don't say**: "Replace all references to oldname"
+✅ **Do say**: "Replace ALL instances of oldname including: paths (oldname/), descriptive text (oldname directory), compound names (oldname-component), etc."
+
+### Reference Materials
+
+See detailed rename operation checklist: `/home/jp/.claude/projects/-home-jp-developments-jp-personal-claude-code-flow/memory/rename-operations.md`
+
 ## Initial Response
 
 When this command is invoked:
