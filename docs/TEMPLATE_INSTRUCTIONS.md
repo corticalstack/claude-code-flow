@@ -18,6 +18,7 @@ This guide walks you through setting up a project created from the `claude-code-
 - [Important: Command Caching Behavior](#important-command-caching-behavior)
 - [Setting Up Claude PR Reviews](#setting-up-claude-pr-reviews)
 - [Command Reference](#command-reference)
+- [Claude Memory System](#claude-memory-system)
 - [Step-by-Step Development Workflow](#step-by-step-development-workflow)
 - [Ralph Autonomous Development](#ralph-autonomous-development)
   - [How Ralph Works](#how-ralph-works)
@@ -715,6 +716,63 @@ The workflow provides these commands organized by phase:
 **Brownfield (existing codebase):**
 
 [/research_codebase](../.claude/commands/research_codebase.md) → [/create_plan](../.claude/commands/create_plan.md) → [/implement_plan](../.claude/commands/implement_plan.md) → [/validate_plan](../.claude/commands/validate_plan.md) → [/commit](../.claude/commands/commit.md) → Push & PR → [/describe_pr](../.claude/commands/describe_pr.md) → Review → [/handle_pr_feedback](../.claude/commands/handle_pr_feedback.md) (if needed)
+
+---
+
+## Claude Memory System
+
+Claude Code maintains a **persistent memory** system that allows Claude to learn from experience across conversations. Memory files are stored in `~/.claude/projects/<project-path>/memory/` and are automatically loaded into Claude's system prompt in future sessions.
+
+### MEMORY.md
+
+The main memory file that persists learnings across all conversations in this project:
+
+- **Location**: `~/.claude/projects/<project-path>/memory/MEMORY.md`
+- **Access**: Use Read/Edit/Write tools on this file path
+- **Limit**: Keep under 200 lines (longer content truncated)
+- **Purpose**: Record critical lessons, patterns, and gotchas that should inform all future work
+
+**Example use case**: After encountering issues during the thoughts→flow rename operation, we documented:
+- Always use feature branches (never work directly on main)
+- Use multiple grep patterns for find/replace operations (not just paths)
+- Run comprehensive verification BEFORE committing (not after)
+- Git stash doesn't preserve renames properly
+
+These lessons are now permanently in Claude's system prompt for this project, preventing the same mistakes in future sessions.
+
+### Topic-Specific Memory Files
+
+For detailed information that would exceed the 200-line limit, create separate topic files:
+
+- **Example**: `memory/rename-operations.md` - Detailed checklist for rename operations
+- **Link from MEMORY.md**: Keep MEMORY.md concise and link to detailed topic files
+- **Organization**: Organize by topic, not chronologically
+
+### When to Update Memory
+
+Add to memory when you:
+- ✅ Encounter a significant mistake with clear lessons learned
+- ✅ Discover a non-obvious pattern or constraint in the codebase
+- ✅ Find a solution to a tricky problem that could recur
+- ✅ Identify a workflow improvement or process refinement
+
+Don't add to memory:
+- ❌ Obvious or well-documented information
+- ❌ Project-specific details that belong in CLAUDE.md
+- ❌ Temporary workarounds that will be fixed
+- ❌ Personal preferences without clear rationale
+
+### Editing Memory
+
+```bash
+# View current memory
+cat ~/.claude/projects/<project-path>/memory/MEMORY.md
+
+# Edit in conversation
+# Simply use the Edit or Write tool with the full path
+```
+
+Claude can read and update memory files during any conversation. Changes are immediately reflected and will be loaded in the next session.
 
 ---
 
