@@ -45,6 +45,83 @@ Phase N: [Name]
 
 Tests provide Claude with a clear, verifiable target. Without tests, there's no way to know if the implementation is correct.
 
+## Special Considerations for Rename Operations
+
+When planning rename operations (directories, files, variables, modules, etc.), be **extremely thorough** in identifying all reference types:
+
+### Research Phase Requirements
+
+For rename operations, the research phase MUST search for multiple pattern variations:
+
+```bash
+# Path references (with slash)
+grep -rn "oldname/" .
+
+# Standalone word references (word boundaries)
+grep -rn "\boldname\b" .
+
+# Hyphenated compounds
+grep -rn "oldname-" .
+
+# Descriptive text (with trailing space)
+grep -rn "oldname " .
+
+# Case-insensitive search for variations
+grep -rin "oldname" . | head -100
+```
+
+### Plan Specification Requirements
+
+Rename operation plans MUST explicitly enumerate ALL reference types found:
+
+**Required in "Current State Analysis":**
+- ✅ **Path references**: `oldname/subdir/file.txt`
+- ✅ **Descriptive text**: "oldname directory", "oldname documents", "oldname agents"
+- ✅ **Compound names**: `oldname-component`, `oldname_function`
+- ✅ **Configuration**: JSON/YAML/TOML key names or values
+- ✅ **Documentation examples**: Commit messages, tutorials, READMEs
+- ✅ **Comments**: Code comments mentioning the old name
+- ✅ **Import statements**: `from oldname import`, `require('oldname')`
+
+**Required in "Implementation Approach":**
+
+State the EXACT patterns to be used for replacement:
+```
+Phase 1: Physical Renames
+  - Use `git mv` for files/directories to preserve history
+
+Phase 2: Content Updates
+  - Replace "oldname/" → "newname/" (path references)
+  - Replace "oldname " → "newname " (descriptive text with space)
+  - Replace "oldname-" → "newname-" (hyphenated compounds)
+  - Replace "\boldname\b" → "newname" (word boundaries)
+  - Manual review of case variations (OldName, OLDNAME, etc.)
+```
+
+**Required in "Success Criteria":**
+
+Include comprehensive verification commands that check for ALL patterns:
+```bash
+# Automated Verification:
+- [ ] No path references: `grep -r "oldname/" . --exclude-dir=.git | grep -v "plan\|research" | wc -l` returns 0
+- [ ] No descriptive text: `grep -r "oldname " . --exclude-dir=.git | grep -v "plan\|research" | wc -l` returns 0
+- [ ] No hyphenated: `grep -r "oldname-" . --exclude-dir=.git | grep -v "plan\|research" | wc -l` returns 0
+- [ ] No word boundary matches: `grep -r "\boldname\b" . --exclude-dir=.git | grep -v "plan\|research" | wc -l` returns 0
+- [ ] New name exists: `grep -r "newname" . --exclude-dir=.git | wc -l` returns > 0
+```
+
+### Common Pitfalls to Avoid
+
+❌ **Don't use narrow patterns**: `s/oldname\//newname\//g` only catches paths with slashes
+✅ **Use comprehensive patterns**: Document all pattern types and verify each one
+
+❌ **Don't say**: "Replace all references to oldname"
+✅ **Do say**: "Replace ALL instances of oldname including: paths (oldname/), descriptive text (oldname directory), compound names (oldname-component), etc."
+
+### Reference Materials
+
+See detailed rename operation checklist: `/home/jp/.claude/projects/-home-jp-developments-jp-personal-claude-code-flow/memory/rename-operations.md`
+
 ## Initial Response
 
 When this command is invoked:
@@ -83,7 +160,7 @@ Then wait for the user's input.
    - Note any linked issues, PRs, or references mentioned
 
 2. **Read all mentioned files immediately and FULLY**:
-   - Research documents (e.g., `thoughts/research/...`)
+   - Research documents (e.g., `flow/research/...`)
    - Related implementation plans
    - Any JSON/data files mentioned
    - **IMPORTANT**: Use the Read tool WITHOUT limit/offset parameters to read entire files
@@ -95,7 +172,7 @@ Then wait for the user's input.
 
    - Use the **codebase-locator** agent to find all files related to the task
    - Use the **codebase-analyzer** agent to understand how the current implementation works
-   - If relevant, use the **thoughts-locator** agent to find any existing thoughts documents about this feature
+   - If relevant, use the **flow-locator** agent to find any existing flow documents about this feature
 
    These agents will:
    - Find relevant source files, configs, and tests
@@ -152,8 +229,8 @@ After getting initial clarifications:
    - **codebase-pattern-finder** - To find similar features we can model after
 
    **For historical context:**
-   - **thoughts-locator** - To find any research, plans, or decisions about this area
-   - **thoughts-analyzer** - To extract key insights from the most relevant documents
+   - **flow-locator** - To find any research, plans, or decisions about this area
+   - **flow-analyzer** - To extract key insights from the most relevant documents
 
    Each agent knows how to:
    - Find the right files and code patterns
@@ -208,14 +285,14 @@ Once aligned on approach:
 
 After structure approval:
 
-1. **Write the plan** to `thoughts/plans/YYYY-MM-DD-gh-[issue]-[description].md`
+1. **Write the plan** to `flow/plans/YYYY-MM-DD-gh-[issue]-[description].md`
    - Format: `YYYY-MM-DD-gh-[issue]-[description].md` where:
      - YYYY-MM-DD is today's date
      - gh-[issue] is the GitHub issue number (omit if no issue)
      - description is a brief kebab-case description
    - Examples:
-     - With issue: `thoughts/plans/2026-01-12-gh-1-research-requirements-command.md`
-     - Without issue: `thoughts/plans/2026-01-12-improve-error-handling.md`
+     - With issue: `flow/plans/2026-01-12-gh-1-research-requirements-command.md`
+     - Without issue: `flow/plans/2026-01-12-improve-error-handling.md`
 2. **Use this template structure**:
 
 ````markdown
@@ -333,7 +410,7 @@ After structure approval:
 ## References
 
 - GitHub issue: https://github.com/[owner]/[repo]/issues/[number]
-- Related research: `thoughts/research/[relevant].md`
+- Related research: `flow/research/[relevant].md`
 - Similar implementation: `[file:line]`
 ````
 
@@ -342,7 +419,7 @@ After structure approval:
 1. **Present the draft plan location**:
    ```
    I've created the initial implementation plan at:
-   `thoughts/plans/YYYY-MM-DD-gh-X-description.md`
+   `flow/plans/YYYY-MM-DD-gh-X-description.md`
 
    Please review it and let me know:
    - Are the phases properly scoped?

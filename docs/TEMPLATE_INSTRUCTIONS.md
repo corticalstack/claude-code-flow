@@ -18,6 +18,7 @@ This guide walks you through setting up a project created from the `claude-code-
 - [Important: Command Caching Behavior](#important-command-caching-behavior)
 - [Setting Up Claude PR Reviews](#setting-up-claude-pr-reviews)
 - [Command Reference](#command-reference)
+- [Claude Memory System](#claude-memory-system)
 - [Step-by-Step Development Workflow](#step-by-step-development-workflow)
 - [Ralph Autonomous Development](#ralph-autonomous-development)
   - [How Ralph Works](#how-ralph-works)
@@ -395,7 +396,7 @@ your-project/
 │   ├── state/              # Ralph autonomous state tracking
 │   ├── active/             # Per-issue logs and feedback
 │   └── archived/           # Archived issue logs
-├── thoughts/
+├── flow/
 │   ├── research/           # Research output documents (empty)
 │   ├── plans/              # Implementation plans (empty)
 │   └── prs/                # PR descriptions (empty)
@@ -448,19 +449,19 @@ your-project/
 
 ### Step 2: Git Configuration (Optional)
 
-You can choose whether to track `thoughts/` in version control:
+You can choose whether to track `flow/` in version control:
 
-**Option A: Track thoughts for team collaboration**
+**Option A: Track flow for team collaboration**
 ```bash
-# Add and commit the thoughts directory
-git add thoughts/
-git commit -m "Add thoughts directory for workflow artifacts"
+# Add and commit the flow directory
+git add flow/
+git commit -m "Add flow directory for workflow artifacts"
 ```
 
-**Option B: Exclude thoughts from version control**
+**Option B: Exclude flow from version control**
 ```bash
 # Add to .gitignore
-echo "thoughts/" >> .gitignore
+echo "flow/" >> .gitignore
 ```
 
 ---
@@ -718,6 +719,110 @@ The workflow provides these commands organized by phase:
 
 ---
 
+## Claude Memory System
+
+Claude Code has two types of persistent memory across sessions:
+
+1. **Auto memory**: Claude automatically saves learnings, patterns, and insights as it works
+2. **CLAUDE.md files**: User-written instructions and preferences for Claude to follow
+
+This section focuses on **auto memory** - Claude's self-maintained notes about your project.
+
+### Auto Memory Overview
+
+**Location**: `~/.claude/projects/<project>/memory/`
+
+Auto memory is where Claude records what it learns during sessions - patterns it discovers, solutions to problems, architectural insights, and your preferences. Unlike CLAUDE.md (which contains instructions you write), auto memory contains notes Claude writes for itself.
+
+**Structure**:
+```
+~/.claude/projects/<project>/memory/
+├── MEMORY.md              # Index loaded into system prompt (200 lines max)
+├── rename-operations.md   # Detailed topic file
+└── debugging.md           # Another topic file
+```
+
+### How It Works
+
+- **MEMORY.md**: First 200 lines loaded into Claude's system prompt at the start of every session
+- **Topic files**: Detailed notes (e.g., `debugging.md`, `patterns.md`) loaded on demand when Claude needs them
+- **Automatic**: Claude reads and writes these files during your session as it learns
+
+### The `/memory` Command
+
+**Open memory files for editing:**
+```bash
+/memory
+```
+
+This opens a file selector showing all your memory files (MEMORY.md, topic files, and CLAUDE.md files). Select one to open it in your system's default editor for viewing or editing.
+
+**When to use**:
+- Review what Claude has learned
+- Organize or refine auto memory content
+- Add important learnings manually
+- Every few weeks to keep memory current
+
+### Real Example: Lessons from Rename Operation
+
+After encountering issues during the thoughts→flow directory rename, we documented critical lessons in MEMORY.md:
+
+**What we learned:**
+- ⚠️ Always use feature branches (never work directly on main)
+- Use multiple grep patterns for find/replace (not just paths with slashes)
+- Run comprehensive verification BEFORE committing (not after)
+- Git stash doesn't preserve renames properly
+
+**Impact**: These lessons are now permanently in Claude's system prompt for this project, preventing the same mistakes in future sessions.
+
+**Supporting detail**: Created `memory/rename-operations.md` with a detailed 257-line checklist for future rename operations, linked from MEMORY.md.
+
+### When to Update Memory
+
+Claude updates memory automatically, but you can also tell Claude explicitly:
+
+**Good for memory:**
+- ✅ "Remember that we use pnpm, not npm"
+- ✅ "Save to memory that API tests require a local Redis instance"
+- ✅ Significant mistakes with clear lessons learned
+- ✅ Non-obvious patterns or constraints discovered
+- ✅ Solutions to tricky problems that could recur
+
+**Not for memory (use CLAUDE.md instead):**
+- ❌ Project instructions or coding standards (use project CLAUDE.md)
+- ❌ Team-shared conventions (use `.claude/rules/`)
+- ❌ Temporary workarounds that will be fixed
+- ❌ Obvious or well-documented information
+
+### Memory vs CLAUDE.md
+
+| Feature | Auto Memory (MEMORY.md) | CLAUDE.md |
+|---------|------------------------|-----------|
+| **Purpose** | Claude's self-maintained notes | User-written instructions |
+| **Location** | `~/.claude/projects/<project>/memory/` | `./CLAUDE.md` or `./.claude/CLAUDE.md` |
+| **Shared** | Just you (per project) | Team (via git) or personal |
+| **Content** | Learnings, patterns, insights | Rules, preferences, standards |
+| **Updated by** | Claude automatically (or manually via `/memory`) | You (manually) |
+| **Loaded** | First 200 lines of MEMORY.md | Full file at startup |
+
+### Best Practices
+
+- **Keep MEMORY.md concise**: Under 200 lines (content beyond is not loaded)
+- **Use topic files**: Move detailed notes to separate files (e.g., `debugging.md`)
+- **Link from MEMORY.md**: Reference topic files so Claude knows what's available
+- **Review periodically**: Use `/memory` every few weeks to organize and update
+- **Be specific**: "Use 2-space indentation" > "Format code properly"
+
+### Enabling Auto Memory
+
+Auto memory is being rolled out gradually. If you don't see it yet, you can opt in:
+
+```bash
+export CLAUDE_CODE_DISABLE_AUTO_MEMORY=0  # Force on
+```
+
+---
+
 ## Step-by-Step Development Workflow
 
 > **Note:** If using [ralph-autonomous.sh](../scripts/ralph-autonomous.sh) for autonomous workflow, branch creation and the full workflow are handled automatically. This section is for manual step-by-step development.
@@ -794,13 +899,13 @@ git checkout -b feature/42-add-feature-x
 /research_requirements #42
 
 # 4. Create implementation plan
-/create_plan thoughts/research/2026-02-03-gh-42-add-feature-x.md
+/create_plan flow/research/2026-02-03-gh-42-add-feature-x.md
 
 # 5. Implement the plan
-/implement_plan thoughts/plans/2026-02-03-gh-42-add-feature-x.md
+/implement_plan flow/plans/2026-02-03-gh-42-add-feature-x.md
 
 # 6. Validate implementation
-/validate_plan thoughts/plans/2026-02-03-gh-42-add-feature-x.md
+/validate_plan flow/plans/2026-02-03-gh-42-add-feature-x.md
 
 # 7. Commit changes
 /commit
@@ -843,13 +948,13 @@ git checkout -b feature/7-new-endpoint
 /research_codebase #7
 
 # 4. Create implementation plan
-/create_plan thoughts/research/2026-02-03-gh-7-new-endpoint.md
+/create_plan flow/research/2026-02-03-gh-7-new-endpoint.md
 
 # 5. Implement the plan
-/implement_plan thoughts/plans/2026-02-03-gh-7-new-endpoint.md
+/implement_plan flow/plans/2026-02-03-gh-7-new-endpoint.md
 
 # 6. Validate implementation
-/validate_plan thoughts/plans/2026-02-03-gh-7-new-endpoint.md
+/validate_plan flow/plans/2026-02-03-gh-7-new-endpoint.md
 
 # 7. Commit changes
 /commit
@@ -915,7 +1020,7 @@ Generates comprehensive PR descriptions following this repository's template.
 - Analyzes the full diff and commit history
 - Runs verification commands (tests, linting) and marks checklist items
 - Generates a thorough description filling all template sections
-- Saves the description to `thoughts/prs/{number}_description.md`
+- Saves the description to `flow/prs/{number}_description.md`
 - Updates the PR directly via `gh pr edit`
 
 **Example workflow:**
@@ -1063,7 +1168,7 @@ Update your plan file to document the changes:
 
 ```bash
 # Find your plan file
-ls thoughts/plans/*-gh-<issue-number>-*.md
+ls flow/plans/*-gh-<issue-number>-*.md
 
 # Update the plan with PR Review Updates section
 # Add what changed and why based on @claude's feedback
@@ -1071,7 +1176,7 @@ ls thoughts/plans/*-gh-<issue-number>-*.md
 
 Or ask Claude to update it:
 ```
-Update the implementation plan at thoughts/plans/<file>.md to document the PR feedback changes:
+Update the implementation plan at flow/plans/<file>.md to document the PR feedback changes:
 - What @claude suggested
 - What was changed
 - Why it matters
@@ -1080,7 +1185,7 @@ Update the implementation plan at thoughts/plans/<file>.md to document the PR fe
 #### 4. Commit and Push Updates
 ```bash
 # Commit your changes AND the updated plan
-git add <changed-files> thoughts/plans/<plan-file>.md
+git add <changed-files> flow/plans/<plan-file>.md
 git commit -m "Address @claude feedback: <describe what you fixed>"
 
 # Push to update the PR
@@ -1429,8 +1534,8 @@ tmux attach -t ralph-monitor-<session-id>
 # [DRY RUN] Would invoke /research_codebase for issue #42
 # [DRY RUN] Would invoke /create_plan for issue #42
 # [DRY RUN] Would reset to main and create branch: feature/42-add-feature-x
-# [DRY RUN] Would invoke /implement_plan for thoughts/plans/...
-# [DRY RUN] Would invoke /validate_plan for thoughts/plans/...
+# [DRY RUN] Would invoke /implement_plan for flow/plans/...
+# [DRY RUN] Would invoke /validate_plan for flow/plans/...
 # [DRY RUN] Would commit changes and create PR
 ```
 
@@ -1609,7 +1714,7 @@ This template uses a **custom command** instead. Here's why:
 | **Integration** | Generic | Uses YOUR GitHub labels, paths, existing commands |
 | **Workflow** | Standalone | Orchestrates `/research_requirements` → `/create_plan` → `/implement_plan` → `/validate_plan` |
 | **Quality Gates** | Unknown | Validation before commits, fails gracefully |
-| **Artifacts** | Unknown | Creates `thoughts/research/` and `thoughts/plans/` documents |
+| **Artifacts** | Unknown | Creates `flow/research/` and `flow/plans/` documents |
 | **Customization** | Use as-is | Modify to match your workflow |
 | **Maintenance** | Anthropic controls updates | You control changes, version controlled in your repo |
 ---

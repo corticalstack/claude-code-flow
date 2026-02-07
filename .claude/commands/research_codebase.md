@@ -1,5 +1,5 @@
 ---
-description: Document codebase as-is with thoughts directory for historical context
+description: Document codebase as-is with flow directory for historical context
 model: opus
 ---
 
@@ -54,9 +54,9 @@ Then wait for the user's research query.
 
    **IMPORTANT**: All agents are documentarians, not critics. They will describe what exists without suggesting improvements or identifying issues.
 
-   **For thoughts directory:**
-   - Use the **thoughts-locator** agent to discover what documents exist about the topic
-   - Use the **thoughts-analyzer** agent to extract key insights from specific documents (only the most relevant ones)
+   **For flow directory:**
+   - Use the **flow-locator** agent to discover what documents exist about the topic
+   - Use the **flow-analyzer** agent to extract key insights from specific documents (only the most relevant ones)
 
    **For web research (only if user explicitly asks):**
    - Use the **web-search-researcher** agent for external documentation and resources
@@ -72,12 +72,12 @@ Then wait for the user's research query.
 
 4. **Wait for all sub-agents to complete and synthesize findings:**
    - IMPORTANT: Wait for ALL sub-agent tasks to complete before proceeding
-   - Compile all sub-agent results (both codebase and thoughts findings)
+   - Compile all sub-agent results (both codebase and flow findings)
    - Prioritize live codebase findings as primary source of truth
-   - Use thoughts/ findings as supplementary historical context
+   - Use flow/ findings as supplementary historical context
    - Connect findings across different components
    - Include specific file paths and line numbers for reference
-   - Verify all thoughts/ paths are correct
+   - Verify all flow/ paths are correct
    - Highlight patterns, connections, and architectural decisions
    - Answer the user's specific questions with concrete evidence
 
@@ -86,14 +86,14 @@ Then wait for the user's research query.
      - `git rev-parse HEAD` for commit hash
      - `git branch --show-current` for branch name
      - `git remote get-url origin` for repository
-   - Filename: `thoughts/research/YYYY-MM-DD-gh-<number>-description.md`
+   - Filename: `flow/research/YYYY-MM-DD-gh-<number>-description.md`
      - Format: `YYYY-MM-DD-gh-<number>-description.md` where:
        - YYYY-MM-DD is today's date
        - gh-<number> is the GitHub issue number (omit if no issue)
        - description is a brief kebab-case description of the research topic
      - Examples:
-       - With issue: `thoughts/research/2025-01-08-gh-42-parent-child-tracking.md`
-       - Without issue: `thoughts/research/2025-01-08-authentication-flow.md`
+       - With issue: `flow/research/2025-01-08-gh-42-parent-child-tracking.md`
+       - Without issue: `flow/research/2025-01-08-authentication-flow.md`
 
 6. **Generate research document:**
    - Use the metadata gathered in step 4
@@ -143,13 +143,13 @@ Then wait for the user's research query.
      ## Architecture Documentation
      [Current patterns, conventions, and design implementations found in the codebase]
 
-     ## Historical Context (from thoughts/)
-     [Relevant insights from thoughts/ directory with references]
-     - `thoughts/research/something.md` - Previous research about X
-     - `thoughts/plans/feature.md` - Related implementation plan
+     ## Historical Context (from flow/)
+     [Relevant insights from flow/ directory with references]
+     - `flow/research/something.md` - Previous research about X
+     - `flow/plans/feature.md` - Related implementation plan
 
      ## Related Research
-     [Links to other research documents in thoughts/research/]
+     [Links to other research documents in flow/research/]
 
      ## Open Questions
      [Any areas that need further investigation]
@@ -179,7 +179,7 @@ Then wait for the user's research query.
 ## Important notes:
 - Always use parallel Task agents to maximize efficiency and minimize context usage
 - Always run fresh codebase research - never rely solely on existing research documents
-- The thoughts/ directory provides historical context to supplement live findings
+- The flow/ directory provides historical context to supplement live findings
 - Focus on finding concrete file paths and line numbers for developer reference
 - Research documents should be self-contained with all necessary context
 - Each sub-agent prompt should be specific and focused on read-only documentation operations
@@ -188,7 +188,7 @@ Then wait for the user's research query.
 - Link to GitHub when possible for permanent references
 - Keep the main agent focused on synthesis, not deep file reading
 - Have sub-agents document examples and usage patterns as they exist
-- Explore all of thoughts/ directory, not just research subdirectory
+- Explore all of flow/ directory, not just research subdirectory
 - **CRITICAL**: You and all sub-agents are documentarians, not evaluators
 - **REMEMBER**: Document what IS, not what SHOULD BE
 - **NO RECOMMENDATIONS**: Only describe the current state of the codebase

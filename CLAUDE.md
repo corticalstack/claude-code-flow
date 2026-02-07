@@ -6,6 +6,37 @@ This file provides guidance to Claude Code when working with this repository.
 
 This is a template repository for setting up an advanced Claude Code workflow. See [`README.md`](README.md) for setup instructions.
 
+## ⚠️ CRITICAL: Feature Branch Requirement ⚠️
+
+**NEVER MAKE CODE CHANGES DIRECTLY ON THE MAIN BRANCH**
+
+This is an **absolute requirement** with **NO EXCEPTIONS**:
+
+- **ALWAYS create a feature branch** before making ANY code changes
+- **NEVER commit directly to main** - all changes must go through pull requests
+- **Feature branch naming**: Use descriptive names like `feature/<issue-number>-<brief-description>` or `bugfix/<issue-number>-<brief-description>`
+- **Before starting ANY workflow step** (research, planning, implementation, validation, etc.):
+  1. Check current branch with `git branch --show-current`
+  2. If on main, **IMMEDIATELY** create a feature branch: `git checkout -b feature/<name>`
+  3. Only proceed with changes once on a feature branch
+
+**This applies to ALL workflow commands:**
+- `/research_requirements` - creates markdown files in flow/research/
+- `/research_codebase` - creates markdown files in flow/research/
+- `/create_plan` - creates markdown files in flow/plans/
+- `/implement_plan` - creates/modifies code, tests, and other files
+- `/validate_plan` - may modify files during validation fixes
+- `/describe_pr` - creates markdown files in flow/prs/
+- **ALL of these generate artifacts and must be done on a feature branch**
+
+**Why this matters:**
+- Main branch must always remain stable and deployable
+- All changes require code review via pull requests
+- CI/CD pipelines expect this branching model
+- Accidental main branch commits disrupt the workflow
+
+**If you find yourself on main branch**: STOP immediately, create a feature branch, and move any changes there before proceeding.
+
 ## Workflow
 
 Follow the **Research → Plan → Implement → Validate** pattern:
@@ -15,7 +46,7 @@ Follow the **Research → Plan → Implement → Validate** pattern:
 
 2. **Plan before coding**: Create implementation plans
    - `/create_plan <GitHub issue URL>`
-   - Plans live in [`thoughts/plans/`](thoughts/plans/)
+   - Plans live in [`flow/plans/`](flow/plans/)
 
 3. **Implement with verification**: Execute plans phase by phase
    - `/implement_plan <plan path>`
@@ -28,12 +59,18 @@ Follow the **Research → Plan → Implement → Validate** pattern:
 
 ## Development Conventions
 
+### Branch Naming
+- **Feature branches**: `feature/<issue-number>-<brief-description>`
+- **Bug fixes**: `bugfix/<issue-number>-<brief-description>`
+- **Always** branch from main
+- **Never** commit directly to main
+
+### Other Conventions
 <!-- Add your project-specific conventions here -->
 <!-- Examples:
 - Package manager: npm, uv, cargo, go mod, etc.
 - Code style: formatters, linters
 - Testing approach: TDD, integration tests, etc.
-- Branch naming: feature/, bugfix/, etc.
 -->
 
 ## Documentation Conventions

@@ -10,7 +10,7 @@ You are tasked with writing a handoff document to hand off your work to another 
 ## Process
 ### 1. Filepath & Metadata
 Use the following information to understand how to create your document:
-    - Create your file under `thoughts/handoffs/gh-<number>/YYYY-MM-DD_HH-MM-SS_description.md`, where:
+    - Create your file under `flow/handoffs/gh-<number>/YYYY-MM-DD_HH-MM-SS_description.md`, where:
         - `gh-<number>` is the GitHub issue number (use `general` if no issue)
         - YYYY-MM-DD is today's date
         - HH-MM-SS is the hours, minutes and seconds based on the current time, in 24-hour format
@@ -20,8 +20,8 @@ Use the following information to understand how to create your document:
         - `git branch --show-current` for branch name
         - `git remote get-url origin` for repository
     - Examples:
-        - With issue: `thoughts/handoffs/gh-123/2025-01-08_13-55-22_implement-streaming-api.md`
-        - Without issue: `thoughts/handoffs/general/2025-01-08_13-55-22_refactor-config.md`
+        - With issue: `flow/handoffs/gh-123/2025-01-08_13-55-22_implement-streaming-api.md`
+        - Without issue: `flow/handoffs/general/2025-01-08_13-55-22_refactor-config.md`
 
 ### 2. Handoff writing
 Using the above conventions, write your document. Use the defined filepath and the following YAML frontmatter pattern:
@@ -78,7 +78,7 @@ For example:
 ```
 Handoff created! You can resume from this handoff in a new session with:
 
-/resume_handoff thoughts/handoffs/gh-123/2025-01-08_13-44-55_implement-streaming-api.md
+/resume_handoff flow/handoffs/gh-123/2025-01-08_13-44-55_implement-streaming-api.md
 ```
 
 ---
