@@ -6,6 +6,28 @@ This file provides guidance to Claude Code when working with this repository.
 
 This is a template repository for setting up an advanced Claude Code workflow. See [`README.md`](README.md) for setup instructions.
 
+## ⚠️ CRITICAL: Feature Branch Requirement ⚠️
+
+**NEVER MAKE CODE CHANGES DIRECTLY ON THE MAIN BRANCH**
+
+This is an **absolute requirement** with **NO EXCEPTIONS**:
+
+- **ALWAYS create a feature branch** before making ANY code changes
+- **NEVER commit directly to main** - all changes must go through pull requests
+- **Feature branch naming**: Use descriptive names like `feature/<issue-number>-<brief-description>` or `bugfix/<issue-number>-<brief-description>`
+- **Before starting ANY implementation**:
+  1. Check current branch with `git branch --show-current`
+  2. If on main, **IMMEDIATELY** create a feature branch: `git checkout -b feature/<name>`
+  3. Only proceed with changes once on a feature branch
+
+**Why this matters:**
+- Main branch must always remain stable and deployable
+- All changes require code review via pull requests
+- CI/CD pipelines expect this branching model
+- Accidental main branch commits disrupt the workflow
+
+**If you find yourself on main branch**: STOP immediately, create a feature branch, and move any changes there before proceeding.
+
 ## Workflow
 
 Follow the **Research → Plan → Implement → Validate** pattern:
@@ -28,12 +50,18 @@ Follow the **Research → Plan → Implement → Validate** pattern:
 
 ## Development Conventions
 
+### Branch Naming
+- **Feature branches**: `feature/<issue-number>-<brief-description>`
+- **Bug fixes**: `bugfix/<issue-number>-<brief-description>`
+- **Always** branch from main
+- **Never** commit directly to main
+
+### Other Conventions
 <!-- Add your project-specific conventions here -->
 <!-- Examples:
 - Package manager: npm, uv, cargo, go mod, etc.
 - Code style: formatters, linters
 - Testing approach: TDD, integration tests, etc.
-- Branch naming: feature/, bugfix/, etc.
 -->
 
 ## Documentation Conventions
