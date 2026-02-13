@@ -223,11 +223,15 @@ update_monitor_status "running" "initializing" "null"
 
 # Helper function to get Claude flags based on configuration
 get_claude_flags() {
+    # CRITICAL: --allowedTools causes print mode to hang
+    # Must use --dangerously-skip-permissions for autonomous execution
+    local flags="--dangerously-skip-permissions"
+
     if [ "$RALPH_VERBOSE_MODE" = true ]; then
-        echo "--verbose --output-format=stream-json"
-    else
-        echo ""
+        flags="$flags --verbose --output-format stream-json"
     fi
+
+    echo "$flags"
 }
 
 # Helper function to execute Claude with optional verbose parsing
@@ -239,7 +243,7 @@ execute_claude() {
     if [ "$RALPH_VERBOSE_MODE" = true ]; then
         # Verbose mode: use JSON streaming with parser for real-time tool visibility
         timeout "$timeout_seconds" claude $(get_claude_flags) --print "$prompt" 2>&1 | \
-            "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/lib/parse_claude_stream.sh" | \
+            "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/parse_claude_stream.sh" | \
             tee "$log_file"
     else
         # Normal mode: standard text output
@@ -406,7 +410,15 @@ while [ "$ISSUE_ITERATION" -lt "$MAX_ISSUE_ITERATIONS" ]; do
                     record_api_call
 
                     # FRESH CLAUDE SESSION - No prior context
-                    PROMPT="Execute the /research_codebase command for GitHub issue #$ISSUE. After completion, verify the research document was created in flow/research/ and output 'RESEARCH_COMPLETE'."
+                    PROMPT="Execute the /research_codebase command for GitHub issue #$ISSUE.
+
+CRITICAL: You are in AUTONOMOUS mode.
+- Do NOT use AskUserQuestion tool
+- Make reasonable decisions and proceed
+- When uncertain, choose conventional approaches
+- Document any assumptions in the research document
+
+After completion, verify the research document was created in flow/research/ and output 'RESEARCH_COMPLETE'."
 
                     if execute_claude "$CLAUDE_TIMEOUT_SECONDS" "$PROMPT" "$(get_issue_log_dir $ISSUE)/research_attempt_${ATTEMPT}.log"; then
                         log_success "Research skill completed"

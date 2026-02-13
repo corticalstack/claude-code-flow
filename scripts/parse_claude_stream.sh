@@ -2,10 +2,10 @@
 #
 # parse_claude_stream.sh
 #
-# Parses Claude Code --verbose --output-format=stream-json output to show tool calls
+# Parses Claude Code --verbose --output-format stream-json output to show tool calls
 # This enables verbose visibility into Claude's operations during Ralph autonomous mode
 #
-# Usage: claude --verbose --output-format=stream-json --print "prompt" | ./parse_claude_stream.sh
+# Usage: claude --verbose --output-format stream-json --print "prompt" | ./parse_claude_stream.sh
 #
 
 set -euo pipefail
