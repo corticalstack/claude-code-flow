@@ -242,9 +242,10 @@ execute_claude() {
 
     if [ "$RALPH_VERBOSE_MODE" = true ]; then
         # Verbose mode: use JSON streaming with parser for real-time tool visibility
-        timeout "$timeout_seconds" claude $(get_claude_flags) --print "$prompt" 2>&1 | \
-            "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/parse_claude_stream.sh" | \
-            tee "$log_file"
+        # Use stdbuf to force line-buffering for immediate output
+        stdbuf -oL timeout "$timeout_seconds" claude $(get_claude_flags) --print "$prompt" 2>&1 | \
+            stdbuf -oL "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/parse_claude_stream.sh" | \
+            stdbuf -oL tee "$log_file"
     else
         # Normal mode: standard text output
         timeout "$timeout_seconds" claude --print "$prompt" 2>&1 | tee "$log_file"
