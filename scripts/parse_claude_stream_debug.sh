@@ -77,7 +77,7 @@ while IFS= read -r line; do
     fi
 
     # Validate JSON
-    if echo "$line" | jq -u . > /dev/null 2>&1; then
+    if echo "$line" | jq --unbuffered . > /dev/null 2>&1; then
         json_valid=$((json_valid + 1))
         log_debug "Line $line_count: Valid JSON ✓"
     else
@@ -89,15 +89,15 @@ while IFS= read -r line; do
     fi
 
     # Parse JSON type
-    event_type=$(echo "$line" | jq -u -r '.type // empty' 2>/dev/null)
+    event_type=$(echo "$line" | jq --unbuffered -r '.type // empty' 2>/dev/null)
     log_debug "Event type: '$event_type'"
 
     case "$event_type" in
         "system")
             log_debug "Processing SYSTEM event"
             if [ "$SHOW_SESSION_INFO" = true ]; then
-                model=$(echo "$line" | jq -u -r '.model // empty' 2>/dev/null)
-                session=$(echo "$line" | jq -u -r '.session_id // empty' 2>/dev/null)
+                model=$(echo "$line" | jq --unbuffered -r '.model // empty' 2>/dev/null)
+                session=$(echo "$line" | jq --unbuffered -r '.session_id // empty' 2>/dev/null)
                 log_debug "Model: $model, Session: $session"
                 if [ -n "$model" ]; then
                     echo -e "${CYAN}[ℹ️  SESSION]${RESET} Model: $model | Session: ${session:0:8}..." >&3
@@ -109,7 +109,7 @@ while IFS= read -r line; do
         "thinking")
             log_debug "Processing THINKING event"
             if [ "$SHOW_THINKING" = true ]; then
-                thinking=$(echo "$line" | jq -u -r '.content // empty' 2>/dev/null)
+                thinking=$(echo "$line" | jq --unbuffered -r '.content // empty' 2>/dev/null)
                 thinking_length=${#thinking}
                 log_debug "Thinking content length: $thinking_length"
                 if [ -n "$thinking" ]; then
@@ -121,7 +121,7 @@ while IFS= read -r line; do
 
         "assistant")
             log_debug "Processing ASSISTANT event"
-            message_content=$(echo "$line" | jq -u -c '.message.content[]?' 2>/dev/null)
+            message_content=$(echo "$line" | jq --unbuffered -c '.message.content[]?' 2>/dev/null)
             content_count=$(echo "$message_content" | wc -l)
             log_debug "Assistant message has $content_count content items"
 
@@ -131,16 +131,16 @@ while IFS= read -r line; do
                 item_num=$((item_num + 1))
                 log_debug "  Content item $item_num: ${content_item:0:80}"
 
-                content_type=$(echo "$content_item" | jq -u -r '.type // empty' 2>/dev/null)
+                content_type=$(echo "$content_item" | jq --unbuffered -r '.type // empty' 2>/dev/null)
                 log_debug "  Content type: '$content_type'"
 
                 case "$content_type" in
                     "tool_use")
                         log_debug "  Processing TOOL_USE"
                         if [ "$SHOW_TOOL_DETAILS" = true ]; then
-                            tool_name=$(echo "$content_item" | jq -u -r '.name // empty' 2>/dev/null)
-                            tool_id=$(echo "$content_item" | jq -u -r '.id // empty' 2>/dev/null)
-                            tool_input=$(echo "$content_item" | jq -u -c '.input // {}' 2>/dev/null)
+                            tool_name=$(echo "$content_item" | jq --unbuffered -r '.name // empty' 2>/dev/null)
+                            tool_id=$(echo "$content_item" | jq --unbuffered -r '.id // empty' 2>/dev/null)
+                            tool_input=$(echo "$content_item" | jq --unbuffered -c '.input // {}' 2>/dev/null)
 
                             log_debug "  Tool: $tool_name (ID: $tool_id)"
                             if [ -n "$tool_name" ]; then
@@ -153,7 +153,7 @@ while IFS= read -r line; do
 
                     "text")
                         log_debug "  Processing TEXT"
-                        text=$(echo "$content_item" | jq -u -r '.text // empty' 2>/dev/null)
+                        text=$(echo "$content_item" | jq --unbuffered -r '.text // empty' 2>/dev/null)
                         text_length=${#text}
                         log_debug "  Text length: $text_length chars"
                         if [ -n "$text" ]; then
@@ -171,7 +171,7 @@ while IFS= read -r line; do
 
         "result")
             log_debug "Processing RESULT event"
-            result_text=$(echo "$line" | jq -u -r '.result // empty' 2>/dev/null)
+            result_text=$(echo "$line" | jq --unbuffered -r '.result // empty' 2>/dev/null)
             if [ -n "$result_text" ] && [ "$result_text" != "null" ]; then
                 log_debug "Result: $result_text"
             fi

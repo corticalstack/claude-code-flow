@@ -20,7 +20,7 @@ echo
 
 echo "Running (10 second timeout):"
 timeout 10 claude --verbose -p "Count from 1 to 5, with a brief comment after each number" --output-format stream-json 2>&1 | \
-jq -u -r 'select(.type == "assistant") | .message.content[]? | select(.type? == "text") | .text' || true
+jq --unbuffered -r 'select(.type == "assistant") | .message.content[]? | select(.type? == "text") | .text' || true
 
 echo
 echo "✅ Test 1 complete"
