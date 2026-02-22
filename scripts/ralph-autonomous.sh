@@ -411,15 +411,24 @@ while [ "$ISSUE_ITERATION" -lt "$MAX_ISSUE_ITERATIONS" ]; do
                     record_api_call
 
                     # FRESH CLAUDE SESSION - No prior context
-                    PROMPT="Execute the /research_codebase command for GitHub issue #$ISSUE.
+                    # NOTE: Do NOT use slash command syntax (/research_codebase) - causes hang in print mode (GitHub issue #4184)
+                    PROMPT="You are an autonomous agent. Research GitHub issue #$ISSUE for implementation planning.
 
-CRITICAL: You are in AUTONOMOUS mode.
-- Do NOT use AskUserQuestion tool
-- Make reasonable decisions and proceed
-- When uncertain, choose conventional approaches
-- Document any assumptions in the research document
+CRITICAL: Do NOT use AskUserQuestion. Make all decisions independently.
 
-After completion, verify the research document was created in flow/research/ and output 'RESEARCH_COMPLETE'."
+STEPS:
+1. Run: gh issue view $ISSUE --json title,body,labels
+2. Identify what needs to be implemented
+3. Search codebase for relevant files using Glob and Grep tools
+4. Analyze existing code structure
+
+CREATE DOCUMENT at flow/research/$(date +%Y-%m-%d)-gh-${ISSUE}-description.md containing:
+- Issue summary and requirements
+- Relevant existing files found
+- Architecture notes
+- Implementation considerations
+
+Output RESEARCH_COMPLETE when the document is created."
 
                     if execute_claude "$CLAUDE_TIMEOUT_SECONDS" "$PROMPT" "$(get_issue_log_dir $ISSUE)/research_attempt_${ATTEMPT}.log"; then
                         log_success "Research skill completed"
@@ -618,11 +627,18 @@ After completion, verify the research document was created in flow/research/ and
             record_api_call
 
             # FRESH CLAUDE SESSION - Validates implementation
-            VALIDATE_PROMPT="Execute the /validate_plan command for plan file: $PLAN_FILE
+            # NOTE: Do NOT use slash command syntax - causes hang in print mode (GitHub issue #4184)
+            VALIDATE_PROMPT="You are an autonomous agent. Validate the implementation for GitHub issue #$ISSUE (attempt $ATTEMPT/$MAX_ATTEMPTS_PER_ISSUE).
 
-This is attempt $ATTEMPT/$MAX_ATTEMPTS_PER_ISSUE.
+CRITICAL: Do NOT use AskUserQuestion. Make all decisions independently.
 
-Output validation results clearly with 'VALIDATION PASSED' or 'VALIDATION FAILED'."
+STEPS:
+1. Read plan: $PLAN_FILE
+2. Verify every file listed in the plan was created/modified correctly
+3. Run any tests specified in the plan
+4. Check all success criteria are met
+
+Output 'VALIDATION PASSED' if all checks pass, or 'VALIDATION FAILED: <reason>' if not."
 
             # Run claude command and capture exit status
             set +e
@@ -678,9 +694,18 @@ Output validation results clearly with 'VALIDATION PASSED' or 'VALIDATION FAILED
                 increment_rate_limit
                 record_api_call
 
-                COMMIT_PROMPT="Execute the /autonomous_commit command. Create a commit for the changes implementing issue #$ISSUE.
+                # NOTE: Do NOT use slash command syntax - causes hang in print mode (GitHub issue #4184)
+                COMMIT_PROMPT="You are an autonomous agent. Create a git commit for issue #$ISSUE (attempt $ATTEMPT, validation passed).
 
-This is attempt $ATTEMPT/$MAX_ATTEMPTS_PER_ISSUE and validation has passed."
+CRITICAL: Do NOT use AskUserQuestion. Make all decisions independently.
+
+STEPS:
+1. Run: git status
+2. Stage changed files: git add <files>
+3. Write commit message summarising the implementation
+4. Run: git commit -m '<message>'
+
+Output COMMIT_COMPLETE when done."
 
                 if execute_claude 300 "$COMMIT_PROMPT" "$(get_issue_log_dir $ISSUE)/commit_attempt_${ATTEMPT}.log"; then
                     log_success "Commit created"
@@ -828,19 +853,20 @@ EOF
                             increment_rate_limit
                             record_api_call
 
-                            FEEDBACK_PROMPT="Execute the /handle_pr_feedback command for PR #$PR_NUMBER.
+                            # NOTE: Do NOT use slash command syntax - causes hang in print mode (GitHub issue #4184)
+                            FEEDBACK_PROMPT="You are an autonomous agent. Handle PR review feedback for PR #$PR_NUMBER, issue #$ISSUE (review $REVIEW_ITERATION/$MAX_REVIEW_ITERATIONS, attempt $ATTEMPT/$MAX_ATTEMPTS_PER_ISSUE).
 
-This is review iteration $REVIEW_ITERATION/$MAX_REVIEW_ITERATIONS for issue #$ISSUE (attempt $ATTEMPT/$MAX_ATTEMPTS_PER_ISSUE).
+CRITICAL: Do NOT use AskUserQuestion. Make all decisions independently.
 
-The command should:
-1. Fetch @claude's review feedback
-2. Update the implementation plan with PR Review Updates
-3. Implement the requested changes
+STEPS:
+1. Run: gh pr view $PR_NUMBER --json reviews,comments
+2. Read @claude's requested changes
+3. Implement each requested change
 4. Run tests
-5. Commit and push
-6. Request re-review
+5. Run: git add <files> && git commit -m 'Address PR review feedback'
+6. Run: git push
 
-After completion, output 'FEEDBACK_HANDLED' if successful."
+Output FEEDBACK_HANDLED when complete."
 
                             if execute_claude "$CLAUDE_TIMEOUT_SECONDS" "$FEEDBACK_PROMPT" "$(get_issue_log_dir $ISSUE)/pr_feedback_iteration_${REVIEW_ITERATION}_attempt_${ATTEMPT}.log"; then
                                 # Check if feedback was handled
