@@ -109,21 +109,32 @@ build_plan_prompt() {
     local attempt=$2
     local feedback_context="$3"
 
-    local base_prompt="Execute the /create_plan command for GitHub issue #$issue
+    # NOTE: Do NOT use slash command syntax (/create_plan) - causes hang in print mode (GitHub issue #4184)
+    local base_prompt="You are an autonomous agent. Create an implementation plan for GitHub issue #$issue (attempt $attempt/$MAX_ATTEMPTS_PER_ISSUE).
 
-This is attempt $attempt/$MAX_ATTEMPTS_PER_ISSUE."
+CRITICAL: Do NOT use AskUserQuestion. Make all decisions independently.
+
+STEPS:
+1. Read research document: flow/research/*-gh-${issue}-*.md
+2. Run: gh issue view $issue --json title,body
+3. Design a phased implementation approach
+
+CREATE PLAN at flow/plans/$(date +%Y-%m-%d)-gh-${issue}-description.md containing:
+- Overview and requirements
+- Implementation phases with files to modify
+- Success criteria and test approach"
 
     if [ -n "$feedback_context" ]; then
         base_prompt="$base_prompt
 
 $feedback_context
 
-Based on previous failures, create a plan that addresses the issues encountered."
+Address issues from previous attempts in this plan."
     fi
 
     base_prompt="$base_prompt
 
-After completion, verify the plan document was created in flow/plans/ and output 'PLAN_COMPLETE'."
+Output PLAN_COMPLETE when the plan document is created."
 
     echo "$base_prompt"
 }
@@ -135,27 +146,28 @@ build_implement_prompt() {
     local plan_file=$3
     local feedback_context="$4"
 
-    local base_prompt="Execute the /implement_plan command for plan file: $plan_file
+    # NOTE: Do NOT use slash command syntax (/implement_plan) - causes hang in print mode (GitHub issue #4184)
+    local base_prompt="You are an autonomous agent. Implement the plan for GitHub issue #$issue (attempt $attempt/$MAX_ATTEMPTS_PER_ISSUE).
 
-This is attempt $attempt/$MAX_ATTEMPTS_PER_ISSUE for GitHub issue #$issue."
+CRITICAL: Do NOT use AskUserQuestion. Make all decisions independently.
+
+STEPS:
+1. Read plan: $plan_file
+2. Implement ALL phases in the plan - create/modify every file specified
+3. Run tests as specified in the plan
+4. Ensure no placeholder code - implement fully"
 
     if [ -n "$feedback_context" ]; then
         base_prompt="$base_prompt
 
 $feedback_context
 
-Key points:
-- If previous attempts had validation errors, fix those specific issues
-- If previous attempts had no file changes, ensure you actually implement code
-- If previous attempts had merge issues, ensure PR is created correctly
-- Try a different implementation approach if previous attempts failed
-
-Be thorough and ensure all implementation steps are completed."
+Fix the issues from previous attempts. Try a different approach if needed."
     fi
 
     base_prompt="$base_prompt
 
-After completion, output 'IMPLEMENTATION_COMPLETE'."
+Output IMPLEMENTATION_COMPLETE when done."
 
     echo "$base_prompt"
 }
