@@ -22,6 +22,7 @@ This guide walks you through setting up a project created from the `claude-code-
 - [Step-by-Step Development Workflow](#step-by-step-development-workflow)
 - [Ralph Autonomous Development](#ralph-autonomous-development)
   - [How Ralph Works](#how-ralph-works)
+  - [Autonomous Execution Safety](#autonomous-execution-safety)
   - [How Ralph Prioritizes Issues](#how-ralph-prioritizes-issues)
   - [Using Ralph with Live Monitor](#using-ralph-with-live-monitor)
   - [Dry-Run Mode](#dry-run-mode)
@@ -1369,8 +1370,10 @@ Ralph automatically processes issues end-to-end:
 5. Validates implementation ([/validate_plan](../.claude/commands/validate_plan.md))
 6. Creates PR if validation passes
 7. **Requests @claude review:**
-   - Comments `@claude Please review this PR and approve it or request changes`
-   - Polls for review completion (10 minute timeout)
+   - Comments on the PR instructing @claude to review and end its response with exactly one of:
+     - `**DECISION: APPROVED**` — PR is ready to merge
+     - `**DECISION: CHANGES_REQUESTED**` — changes needed (listed above the decision line)
+   - Polls for review completion every 30s (10 minute timeout), scanning for the structured decision line
    - If APPROVED → proceeds to merge
    - If CHANGES_REQUESTED → uses [/handle_pr_feedback](../.claude/commands/handle_pr_feedback.md):
      - Updates implementation plan with "PR Review Updates" section
@@ -1383,6 +1386,36 @@ Ralph automatically processes issues end-to-end:
    - Merges with squash and deletes branch
    - Closes issue with success comment
 9. Moves to next issue
+
+### Autonomous Execution Safety
+
+Ralph runs Claude entirely unattended. Two mechanisms work together to ensure it never hangs waiting for human input.
+
+#### Permissions Model
+
+Ralph invokes the Claude CLI with `--dangerously-skip-permissions`, which bypasses all interactive permission prompts. Without this flag, Claude would pause and ask the user to approve each tool call (file writes, bash commands, git operations), which would block the loop indefinitely.
+
+```bash
+# Verbose mode (default) — used in ralph-autonomous.sh
+claude --dangerously-skip-permissions --disallowedTools AskUserQuestion \
+       --verbose --output-format stream-json --print "$prompt"
+
+# Normal mode (RALPH_VERBOSE_MODE=false)
+claude --disallowedTools AskUserQuestion --print "$prompt"
+```
+
+> **Note:** `settings.local.json` permission rules are only respected when running without `--dangerously-skip-permissions` (i.e. normal mode). In verbose mode (the default), all tools are permitted unconditionally.
+
+#### Layered Anti-Hang Defence
+
+Even with permissions bypassed, Claude could still pause the loop by calling `AskUserQuestion` — a tool that blocks waiting for user input. Ralph prevents this at two levels:
+
+| Layer | Mechanism | What it does |
+|-------|-----------|--------------|
+| **Structural** | `--disallowedTools AskUserQuestion` CLI flag | Removes the tool from Claude's available set entirely — it cannot be called regardless of instructions |
+| **Instructional** | `CRITICAL: Do NOT use AskUserQuestion. Make all decisions independently.` in every prompt | Reinforces intent; Claude never tries to call the tool in the first place |
+
+The structural layer is the reliable one — it makes hangs architecturally impossible rather than just discouraged. The prompt instruction is a belt-and-braces addition that reduces the chance of Claude even attempting it.
 
 ### How Ralph Prioritizes Issues
 
