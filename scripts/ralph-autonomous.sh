@@ -819,13 +819,15 @@ EOF
                             sleep $PR_REVIEW_POLL_INTERVAL
                             POLL_ELAPSED=$(($(date +%s) - REVIEW_START_TIME))
 
-                            # Check review status - first try formal GitHub review decision
-                            REVIEW_STATE=$(gh pr view "$PR_NUMBER" --json reviewDecision --jq '.reviewDecision // "PENDING"')
+                            # Check review status - first try formal GitHub review decision.
+                            # Note: reviewDecision returns "" (empty) not null when no review exists,
+                            # so jq's // operator won't substitute — we normalise in the condition below.
+                            REVIEW_STATE=$(gh pr view "$PR_NUMBER" --json reviewDecision --jq '.reviewDecision // ""')
 
                             # @claude posts comments rather than formal reviews, so fall back to
                             # scanning the last @claude comment for approval/rejection keywords.
                             # @claude uses markdown bold (e.g. **APPROVE**) so patterns match loosely.
-                            if [ "$REVIEW_STATE" = "PENDING" ]; then
+                            if [ -z "$REVIEW_STATE" ] || [ "$REVIEW_STATE" = "PENDING" ]; then
                                 CLAUDE_COMMENT=$(gh pr view "$PR_NUMBER" --json comments \
                                     --jq '[.comments[] | select(.author.login == "claude") | .body] | last // ""')
                                 if echo "$CLAUDE_COMMENT" | grep -qi "Overall Assessment.*APPROVE\|Final Recommendation.*APPROVE\|Recommendation.*APPROVE\|APPROVE AND MERGE"; then
