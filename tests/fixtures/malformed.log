@@ -1,0 +1,5 @@
+2026-01-15 10:00:00 [INFO] Valid line
+not a valid log line
+2026-01-15 [MISSINGTIME] partial line
+2026-01-15 10:00:05 [ERROR] Another valid line
+just some random text

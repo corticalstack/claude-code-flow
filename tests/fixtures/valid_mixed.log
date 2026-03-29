@@ -1,0 +1,10 @@
+2026-01-15 10:00:00 [INFO] Application started
+2026-01-15 10:00:15 [DEBUG] Loading configuration
+2026-01-15 10:00:16 [ERROR] Database connection failed: timeout
+2026-01-15 10:00:20 [WARNING] Retrying connection
+2026-01-15 10:00:25 [ERROR] Database connection failed: timeout
+2026-01-15 10:00:30 [CRITICAL] Service unavailable
+2026-01-15 10:01:00 [INFO] Health check passed
+2026-01-15 10:01:05 [ERROR] Database connection failed: timeout
+2026-01-15 10:01:10 [ERROR] Disk space low: 95% used
+2026-01-15 10:01:15 [WARNING] Memory pressure detected
