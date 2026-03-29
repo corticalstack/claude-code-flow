@@ -224,8 +224,10 @@ update_monitor_status "running" "initializing" "null"
 # Helper function to get Claude flags based on configuration
 get_claude_flags() {
     # CRITICAL: --allowedTools causes print mode to hang
-    # Must use --dangerously-skip-permissions for autonomous execution
-    local flags="--dangerously-skip-permissions"
+    # Must use --dangerously-skip-permissions for autonomous execution.
+    # --disallowedTools AskUserQuestion ensures Claude can never pause for
+    # human input — structurally prevents hangs, not just prompt-instructed.
+    local flags="--dangerously-skip-permissions --disallowedTools AskUserQuestion"
 
     if [ "$RALPH_VERBOSE_MODE" = true ]; then
         flags="$flags --verbose --output-format stream-json"
@@ -247,8 +249,8 @@ execute_claude() {
             stdbuf -oL "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/parse_claude_stream.sh" | \
             stdbuf -oL tee "$log_file"
     else
-        # Normal mode: standard text output
-        timeout "$timeout_seconds" claude --print "$prompt" 2>&1 | tee "$log_file"
+        # Normal mode: standard text output — also block AskUserQuestion
+        timeout "$timeout_seconds" claude --disallowedTools AskUserQuestion --print "$prompt" 2>&1 | tee "$log_file"
     fi
 }
 
