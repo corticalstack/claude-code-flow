@@ -831,10 +831,14 @@ EOF
                                 # Skip "in progress" placeholder comments; only match completed reviews
                                 CLAUDE_COMMENT=$(gh pr view "$PR_NUMBER" --json comments \
                                     --jq '[.comments[] | select(.author.login == "claude") | select(.body | test("PR Review in Progress") | not) | .body] | last // ""')
-                                if echo "$CLAUDE_COMMENT" | grep -qi "Overall Assessment.*APPROVE\|Final Recommendation.*APPROVE\|Recommendation.*APPROVE\|APPROVE AND MERGE"; then
-                                    REVIEW_STATE="APPROVED"
-                                elif echo "$CLAUDE_COMMENT" | grep -qi "Overall Assessment.*CHANGES_REQUESTED\|Overall Assessment.*REQUEST.*CHANGES\|changes_requested\|request.*changes"; then
+                                # Check rejections FIRST to avoid false positives.
+                                # Then broadly match any form of APPROV — @claude is inconsistent:
+                                # sometimes "Overall Assessment: APPROVE", sometimes "**APPROVED**",
+                                # sometimes "This PR should be merged." — cast a wide net.
+                                if echo "$CLAUDE_COMMENT" | grep -qi "changes.requested\|request.*changes\|requesting changes"; then
                                     REVIEW_STATE="CHANGES_REQUESTED"
+                                elif echo "$CLAUDE_COMMENT" | grep -qi "APPROV\|should be merged\|recommend.*merg"; then
+                                    REVIEW_STATE="APPROVED"
                                 fi
                             fi
 
