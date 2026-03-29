@@ -828,8 +828,9 @@ EOF
                             # scanning the last @claude comment for approval/rejection keywords.
                             # @claude uses markdown bold (e.g. **APPROVE**) so patterns match loosely.
                             if [ -z "$REVIEW_STATE" ] || [ "$REVIEW_STATE" = "PENDING" ]; then
+                                # Skip "in progress" placeholder comments; only match completed reviews
                                 CLAUDE_COMMENT=$(gh pr view "$PR_NUMBER" --json comments \
-                                    --jq '[.comments[] | select(.author.login == "claude") | .body] | last // ""')
+                                    --jq '[.comments[] | select(.author.login == "claude") | select(.body | test("PR Review in Progress") | not) | .body] | last // ""')
                                 if echo "$CLAUDE_COMMENT" | grep -qi "Overall Assessment.*APPROVE\|Final Recommendation.*APPROVE\|Recommendation.*APPROVE\|APPROVE AND MERGE"; then
                                     REVIEW_STATE="APPROVED"
                                 elif echo "$CLAUDE_COMMENT" | grep -qi "Overall Assessment.*CHANGES_REQUESTED\|Overall Assessment.*REQUEST.*CHANGES\|changes_requested\|request.*changes"; then
@@ -852,7 +853,7 @@ EOF
 
                         # Handle timeout
                         if [ -z "$REVIEW_DECISION" ]; then
-                            log_warn "Review timeout after ${PR_REVIEW_TIMEOUT}s"
+                            log_warning "Review timeout after ${PR_REVIEW_TIMEOUT}s"
                             gh_update_label "$ISSUE" "needs-human-review" "pr-submitted"
                             gh_add_comment "$ISSUE" "⚠️ @claude review timed out. Needs human review."
                             REVIEW_DECISION="TIMEOUT"
@@ -916,7 +917,7 @@ Output FEEDBACK_HANDLED when complete."
 
                     # Check if we exhausted iterations without approval
                     if [ "$REVIEW_DECISION" = "CHANGES_REQUESTED" ] && [ $REVIEW_ITERATION -gt $MAX_REVIEW_ITERATIONS ]; then
-                        log_warn "Exhausted review iterations ($MAX_REVIEW_ITERATIONS) without approval"
+                        log_warning "Exhausted review iterations ($MAX_REVIEW_ITERATIONS) without approval"
                         gh_update_label "$ISSUE" "needs-human-review" "pr-submitted"
                         gh_add_comment "$ISSUE" "⚠️ PR still has requested changes after $MAX_REVIEW_ITERATIONS iterations. Needs human review."
                         REVIEW_DECISION="NEEDS_HUMAN"
