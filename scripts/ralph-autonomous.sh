@@ -800,7 +800,14 @@ EOF
 
                     # Request @claude review
                     log_info "Requesting @claude review for PR #$PR_NUMBER..."
-                    gh pr comment "$PR_NUMBER" --body "@claude Please review this PR and approve it or request changes"
+                    gh pr comment "$PR_NUMBER" --body "@claude Please review this PR.
+
+After your review, you MUST end your response with exactly one of these lines so automated tooling can parse your decision:
+
+**DECISION: APPROVED** — PR is ready to merge as-is
+**DECISION: CHANGES_REQUESTED** — changes are needed (list them above)
+
+Do not use any other format for the final decision line."
 
                     # Poll for review completion
                     log_info "Polling for review completion (timeout: ${PR_REVIEW_TIMEOUT}s)..."
@@ -824,18 +831,20 @@ EOF
                             # so jq's // operator won't substitute — we normalise in the condition below.
                             REVIEW_STATE=$(gh pr view "$PR_NUMBER" --json reviewDecision --jq '.reviewDecision // ""')
 
-                            # @claude posts comments rather than formal reviews, so fall back to
-                            # scanning the last @claude comment for approval/rejection keywords.
-                            # @claude uses markdown bold (e.g. **APPROVE**) so patterns match loosely.
+                            # @claude posts comments rather than formal reviews, so scan the last
+                            # completed comment. We instruct @claude to end with a structured
+                            # DECISION line; fall back to broad keyword matching for older responses.
                             if [ -z "$REVIEW_STATE" ] || [ "$REVIEW_STATE" = "PENDING" ]; then
                                 # Skip "in progress" placeholder comments; only match completed reviews
                                 CLAUDE_COMMENT=$(gh pr view "$PR_NUMBER" --json comments \
                                     --jq '[.comments[] | select(.author.login == "claude") | select(.body | test("PR Review in Progress") | not) | .body] | last // ""')
-                                # Check rejections FIRST to avoid false positives.
-                                # Then broadly match any form of APPROV — @claude is inconsistent:
-                                # sometimes "Overall Assessment: APPROVE", sometimes "**APPROVED**",
-                                # sometimes "This PR should be merged." — cast a wide net.
-                                if echo "$CLAUDE_COMMENT" | grep -qi "changes.requested\|request.*changes\|requesting changes"; then
+                                # Primary: match the structured DECISION line we instruct @claude to use
+                                if echo "$CLAUDE_COMMENT" | grep -q "DECISION: APPROVED"; then
+                                    REVIEW_STATE="APPROVED"
+                                elif echo "$CLAUDE_COMMENT" | grep -q "DECISION: CHANGES_REQUESTED"; then
+                                    REVIEW_STATE="CHANGES_REQUESTED"
+                                # Fallback: broad keyword match for inconsistent legacy responses
+                                elif echo "$CLAUDE_COMMENT" | grep -qi "changes.requested\|request.*changes\|requesting changes"; then
                                     REVIEW_STATE="CHANGES_REQUESTED"
                                 elif echo "$CLAUDE_COMMENT" | grep -qi "APPROV\|should be merged\|recommend.*merg"; then
                                     REVIEW_STATE="APPROVED"
@@ -894,7 +903,12 @@ Output FEEDBACK_HANDLED when complete."
                                     log_success "Feedback implemented, requesting re-review..."
 
                                     # Re-request review for next iteration
-                                    gh pr comment "$PR_NUMBER" --body "@claude I've addressed your feedback. Please re-review."
+                                    gh pr comment "$PR_NUMBER" --body "@claude I've addressed your feedback. Please re-review.
+
+After your review, you MUST end your response with exactly one of these lines:
+
+**DECISION: APPROVED** — PR is ready to merge as-is
+**DECISION: CHANGES_REQUESTED** — further changes are needed (list them above)"
 
                                     # Reset timer for next poll
                                     REVIEW_START_TIME=$(date +%s)
