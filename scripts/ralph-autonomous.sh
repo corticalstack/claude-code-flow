@@ -243,11 +243,18 @@ execute_claude() {
     local log_file="$3"
 
     if [ "$RALPH_VERBOSE_MODE" = true ]; then
-        # Verbose mode: use JSON streaming with parser for real-time tool visibility
-        # Use stdbuf to force line-buffering for immediate output
-        stdbuf -oL timeout "$timeout_seconds" claude $(get_claude_flags) --print "$prompt" 2>&1 | \
-            stdbuf -oL "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/parse_claude_stream.sh" | \
-            stdbuf -oL tee "$log_file"
+        local parser_script="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/parse_claude_stream.sh"
+
+        if [ -f "$parser_script" ] && [ -x "$parser_script" ]; then
+            # Verbose mode: use JSON streaming with parser for real-time tool visibility
+            # Use stdbuf to force line-buffering for immediate output
+            stdbuf -oL timeout "$timeout_seconds" claude $(get_claude_flags) --print "$prompt" 2>&1 | \
+                stdbuf -oL "$parser_script" | \
+                stdbuf -oL tee "$log_file"
+        else
+            log_warning "parse_claude_stream.sh not found or not executable at $parser_script — falling back to non-verbose mode"
+            timeout "$timeout_seconds" claude --disallowedTools AskUserQuestion --print "$prompt" 2>&1 | tee "$log_file"
+        fi
     else
         # Normal mode: standard text output — also block AskUserQuestion
         timeout "$timeout_seconds" claude --disallowedTools AskUserQuestion --print "$prompt" 2>&1 | tee "$log_file"
