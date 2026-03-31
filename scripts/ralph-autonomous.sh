@@ -340,8 +340,7 @@ while [ "$ISSUE_ITERATION" -lt "$MAX_ISSUE_ITERATIONS" ]; do
     # ========================================================================
     log_phase "Step 1: Selecting next issue"
 
-    ISSUE=$(select_next_issue)
-    if [ $? -ne 0 ] || [ -z "$ISSUE" ]; then
+    if ! ISSUE=$(select_next_issue) || [ -z "$ISSUE" ]; then
         log_info "No more issues to process"
         break
     fi
