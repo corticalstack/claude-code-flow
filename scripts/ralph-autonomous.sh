@@ -844,9 +844,16 @@ Do not use any other format for the final decision line."
                             # completed comment. We instruct @claude to end with a structured
                             # DECISION line; fall back to broad keyword matching for older responses.
                             if [ -z "$REVIEW_STATE" ] || [ "$REVIEW_STATE" = "PENDING" ]; then
-                                # Skip "in progress" placeholder comments; only match completed reviews
+                                # Prioritise comments containing a DECISION line — Claude posts one
+                                # comment that starts with "PR Review in Progress" but ends with the
+                                # decision, so we must not filter it out by heading alone.
                                 CLAUDE_COMMENT=$(gh pr view "$PR_NUMBER" --json comments \
-                                    --jq '[.comments[] | select(.author.login == "claude") | select(.body | test("PR Review in Progress") | not) | .body] | last // ""')
+                                    --jq '[.comments[] | select(.author.login == "claude") | select(.body | test("DECISION:")) | .body] | last // ""')
+                                # No DECISION comment yet — fall back to any non-in-progress comment
+                                if [ -z "$CLAUDE_COMMENT" ]; then
+                                    CLAUDE_COMMENT=$(gh pr view "$PR_NUMBER" --json comments \
+                                        --jq '[.comments[] | select(.author.login == "claude") | select(.body | test("PR Review in Progress") | not) | .body] | last // ""')
+                                fi
                                 # Primary: match the structured DECISION line we instruct @claude to use
                                 if echo "$CLAUDE_COMMENT" | grep -q "DECISION: APPROVED"; then
                                     REVIEW_STATE="APPROVED"
