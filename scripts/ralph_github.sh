@@ -249,14 +249,15 @@ gh_reset_to_main() {
     fi
 
     # Clean up untracked files and directories first to avoid conflicts
-    git clean -fd >/dev/null 2>&1 || true
+    # -e scripts: preserve scripts/ directory — it contains Ralph's own runtime scripts
+    git clean -fd -e scripts >/dev/null 2>&1 || true
 
     # Force checkout to main branch (discarding any changes)
     git checkout -f "$main_branch" >/dev/null 2>&1 || {
         log_warning "Failed to checkout $main_branch, attempting recovery..."
         # If checkout fails, try harder reset
         git reset --hard HEAD >/dev/null 2>&1 || true
-        git clean -fdx >/dev/null 2>&1 || true
+        git clean -fdx -e scripts >/dev/null 2>&1 || true
         git checkout -f "$main_branch" >/dev/null 2>&1 || {
             log_error "Could not reset to $main_branch branch"
             return 1
