@@ -12,6 +12,9 @@
 # Ralph logs
 logs/
 
+# Local research / implementation tracker (working doc, intentionally not committed)
+flow/research/2026-05-21-agentic-coding-state-of-the-art.md
+
 # Python
 __pycache__/
 *.py[cod]
