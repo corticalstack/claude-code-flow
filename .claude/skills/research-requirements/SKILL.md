@@ -1,6 +1,9 @@
 ---
-description: Research requirements, tech choices, and constraints for new projects or features
+name: research-requirements
+description: Research requirements, technology choices, and constraints for a feature or project and write findings under flow/research/. Explicit workflow command; run only when invoked via /research-requirements or explicitly asked.
+argument-hint: [github-issue-url-or-description]
 model: opus
+disable-model-invocation: true
 ---
 
 # Research Requirements
@@ -172,7 +175,7 @@ status: complete
 
 ## Recommended Next Steps
 1. Resolve open questions above
-2. Run `/create_plan` with this research document
+2. Run `/create-plan` with this research document
 ```
 
 ### Step 7: Present and Confirm
@@ -199,7 +202,7 @@ Open questions requiring your input:
 - [Question 1]
 - [Question 2]
 
-Please review the research document. Once you've resolved any open questions, you can proceed with `/create_plan` to design the implementation.
+Please review the research document. Once you've resolved any open questions, you can proceed with `/create-plan` to design the implementation.
 ```
 
 3. **Wait for user confirmation** before any next steps
@@ -216,7 +219,7 @@ Please review the research document. Once you've resolved any open questions, yo
 ### What NOT To Do
 
 - **DO NOT write any implementation code** - this is research only
-- **DO NOT create a plan** - that's `/create_plan`'s job
+- **DO NOT create a plan** - that's `/create-plan`'s job
 - **DO NOT make final technology decisions** - present options with trade-offs
 - **DO NOT skip user confirmation** - always present findings for review
 - **DO NOT pollute main context** - use sub-agents for heavy research
@@ -226,6 +229,6 @@ Please review the research document. Once you've resolved any open questions, yo
 
 ## References
 
-- Pattern reference: [`.claude/commands/research_codebase.md`](.claude/commands/research_codebase.md)
+- Pattern reference: [`.claude/skills/research-codebase/SKILL.md`](.claude/skills/research-codebase/SKILL.md)
 - Workflow concepts: [`docs/claude-code-workflow-concepts.md`](docs/claude-code-workflow-concepts.md)
 - Output directory: `flow/research/`

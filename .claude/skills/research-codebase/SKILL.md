@@ -1,6 +1,9 @@
 ---
-description: Document codebase as-is with flow directory for historical context
+name: research-codebase
+description: Document the codebase as-is via parallel read-only sub-agents and write findings under flow/research/. Explicit workflow command; run only when invoked via /research-codebase or explicitly asked.
+argument-hint: [github-issue-url-or-question]
 model: opus
+disable-model-invocation: true
 ---
 
 # Research Codebase

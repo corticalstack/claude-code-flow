@@ -1,6 +1,9 @@
 ---
-description: Create detailed implementation plans with thorough research and iteration
+name: create-plan
+description: Research the codebase and author a phased implementation plan under flow/plans/ from a GitHub issue or task. Explicit workflow command; run only when invoked via /create-plan or explicitly asked, never autonomously.
+argument-hint: [github-issue-url-or-number]
 model: opus
+disable-model-invocation: true
 ---
 
 # Implementation Plan
@@ -16,7 +19,7 @@ You are tasked with creating detailed implementation plans through an interactiv
 - **NO** class definitions
 - **NO** configuration file contents
 
-Instead, describe **what** each file/component should do, not **how** it should be coded. The actual code is written during `/implement_plan`.
+Instead, describe **what** each file/component should do, not **how** it should be coded. The actual code is written during `/implement-plan`.
 
 **Allowed in plans:**
 - Shell commands for verification (e.g., `curl`, `uv run`, `pytest`)
@@ -142,8 +145,8 @@ Please provide:
 
 I'll analyze this information and work with you to create a comprehensive plan.
 
-Tip: You can invoke this command with a GitHub issue: `/create_plan #123` or `/create_plan https://github.com/owner/repo/issues/123`
-For deeper analysis, try: `/create_plan think deeply about #123`
+Tip: You can invoke this command with a GitHub issue: `/create-plan #123` or `/create-plan https://github.com/owner/repo/issues/123`
+For deeper analysis, try: `/create-plan think deeply about #123`
 ```
 
 Then wait for the user's input.
@@ -348,7 +351,7 @@ After structure approval:
 - [Responsibility 1]
 - [Responsibility 2]
 
-> **Remember**: Describe what the file should do, not the actual code. Implementation happens in `/implement_plan`.
+> **Remember**: Describe what the file should do, not the actual code. Implementation happens in `/implement-plan`.
 
 ### Step 3: Verify
 
@@ -445,7 +448,7 @@ After structure approval:
    - Plans describe WHAT to build, not HOW to code it
    - Never include code snippets for files to be created
    - Describe responsibilities and behaviors, not implementations
-   - Code belongs in `/implement_plan`, not here
+   - Code belongs in `/implement-plan`, not here
 
 2. **Test-Driven Development**:
    - Every phase must write tests BEFORE implementation
@@ -580,16 +583,16 @@ tasks = [
 ## Example Interaction Flow
 
 ```
-User: /create_plan #1
+User: /create-plan #1
 Assistant: Let me fetch that GitHub issue and understand what we're building...
 
 [Fetches issue with gh issue view 1]
 
-Based on the issue, I understand we need to create a /research_requirements command for greenfield projects. Let me research the codebase to understand the existing patterns...
+Based on the issue, I understand we need to create a /research-requirements command for greenfield projects. Let me research the codebase to understand the existing patterns...
 
 [Spawns research agents]
 
-I've found the existing research_codebase.md command which follows a specific pattern. Before I start planning, I have some questions...
+I've found the existing research-codebase skill which follows a specific pattern. Before I start planning, I have some questions...
 
 [Interactive process continues...]
 ```

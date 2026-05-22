@@ -18,7 +18,7 @@ This project uses the **Claude Code Flow** template - a structured workflow for 
 
 **Manual (step-by-step):**
 
-[/research_requirements](.claude/commands/research_requirements.md) → [/create_plan](.claude/commands/create_plan.md) → [/implement_plan](.claude/commands/implement_plan.md) → [/validate_plan](.claude/commands/validate_plan.md) → [/commit](.claude/commands/commit.md) → Push & PR → [/describe_pr](.claude/commands/describe_pr.md) → Review → [/handle_pr_feedback](.claude/commands/handle_pr_feedback.md) (if needed) → Merge
+[/research-requirements](.claude/skills/research-requirements/SKILL.md) → [/create-plan](.claude/skills/create-plan/SKILL.md) → [/implement-plan](.claude/skills/implement-plan/SKILL.md) → [/validate-plan](.claude/skills/validate-plan/SKILL.md) → [/commit](.claude/skills/commit/SKILL.md) → Push & PR → [/describe-pr](.claude/skills/describe-pr/SKILL.md) → Review → [/handle-pr-feedback](.claude/skills/handle-pr-feedback/SKILL.md) (if needed) → Merge
 
 **Autonomous (unattended):**
 ```bash
