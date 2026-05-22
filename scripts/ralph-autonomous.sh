@@ -414,12 +414,12 @@ while [ "$ISSUE_ITERATION" -lt "$MAX_ISSUE_ITERATIONS" ]; do
                 if [ "$DRY_RUN" = false ]; then
                     gh_update_label "$ISSUE" "research-in-progress" ""
 
-                    log_info "Invoking /research_codebase skill in FRESH Claude session..."
+                    log_info "Invoking /research-codebase skill in FRESH Claude session..."
                     increment_rate_limit
                     record_api_call
 
                     # FRESH CLAUDE SESSION - No prior context
-                    # NOTE: Do NOT use slash command syntax (/research_codebase) - causes hang in print mode (GitHub issue #4184)
+                    # NOTE: Do NOT use slash command syntax (/research-codebase) - causes hang in print mode (GitHub issue #4184)
                     PROMPT="You are an autonomous agent. Research GitHub issue #$ISSUE for implementation planning.
 
 CRITICAL: Do NOT use AskUserQuestion. Make all decisions independently.
@@ -459,7 +459,7 @@ Output RESEARCH_COMPLETE when the document is created."
                         continue  # RETRY with fresh session
                     fi
                 else
-                    log_info "[DRY RUN] Would invoke /research_codebase for issue #$ISSUE"
+                    log_info "[DRY RUN] Would invoke /research-codebase for issue #$ISSUE"
                 fi
             fi
         fi
@@ -479,7 +479,7 @@ Output RESEARCH_COMPLETE when the document is created."
         if [ "$DRY_RUN" = false ]; then
             gh_update_label "$ISSUE" "planning-in-progress" "research-complete,ready-for-dev,in-progress"
 
-            log_info "Invoking /create_plan skill in FRESH Claude session..."
+            log_info "Invoking /create-plan skill in FRESH Claude session..."
             increment_rate_limit
             record_api_call
 
@@ -507,7 +507,7 @@ Output RESEARCH_COMPLETE when the document is created."
                 continue  # RETRY with fresh session
             fi
         else
-            log_info "[DRY RUN] Would invoke /create_plan for issue #$ISSUE"
+            log_info "[DRY RUN] Would invoke /create-plan for issue #$ISSUE"
         fi
 
         # ====================================================================
@@ -545,7 +545,7 @@ Output RESEARCH_COMPLETE when the document is created."
         if [ "$DRY_RUN" = false ]; then
             gh_update_label "$ISSUE" "in-progress" "ready-for-dev"
 
-            log_info "Invoking /implement_plan skill in FRESH Claude session..."
+            log_info "Invoking /implement-plan skill in FRESH Claude session..."
             increment_rate_limit
             record_api_call
 
@@ -613,7 +613,7 @@ Output RESEARCH_COMPLETE when the document is created."
                 continue  # RETRY with fresh session
             fi
         else
-            log_info "[DRY RUN] Would invoke /implement_plan for $PLAN_FILE"
+            log_info "[DRY RUN] Would invoke /implement-plan for $PLAN_FILE"
             FILES_CHANGED=5  # Fake for dry run
         fi
 
@@ -630,7 +630,7 @@ Output RESEARCH_COMPLETE when the document is created."
         VALIDATION_PASSED=false
 
         if [ "$DRY_RUN" = false ]; then
-            log_info "Invoking /validate_plan skill in FRESH Claude session..."
+            log_info "Invoking /validate-plan skill in FRESH Claude session..."
             increment_rate_limit
             record_api_call
 
@@ -684,7 +684,7 @@ Output 'VALIDATION PASSED' if all checks pass, or 'VALIDATION FAILED: <reason>' 
                 continue  # RETRY with fresh session and validation feedback
             fi
         else
-            log_info "[DRY RUN] Would invoke /validate_plan for $PLAN_FILE"
+            log_info "[DRY RUN] Would invoke /validate-plan for $PLAN_FILE"
             VALIDATION_PASSED=true
         fi
 
@@ -698,7 +698,7 @@ Output 'VALIDATION PASSED' if all checks pass, or 'VALIDATION FAILED: <reason>' 
 
             if [ "$DRY_RUN" = false ]; then
                 # Commit changes
-                log_info "Invoking /autonomous_commit skill in FRESH Claude session..."
+                log_info "Invoking /autonomous-commit skill in FRESH Claude session..."
                 increment_rate_limit
                 record_api_call
 
@@ -892,8 +892,8 @@ Do not use any other format for the final decision line."
                         if [ "$REVIEW_DECISION" = "CHANGES_REQUESTED" ]; then
                             log_info "Handling feedback iteration $REVIEW_ITERATION/$MAX_REVIEW_ITERATIONS"
 
-                            # Use /handle_pr_feedback to implement changes
-                            log_info "Invoking /handle_pr_feedback in FRESH Claude session..."
+                            # Use /handle-pr-feedback to implement changes
+                            log_info "Invoking /handle-pr-feedback in FRESH Claude session..."
                             increment_rate_limit
                             record_api_call
 
@@ -939,8 +939,8 @@ After your review, you MUST end your response with exactly one of these lines:
                                     break
                                 fi
                             else
-                                log_error "Failed to execute /handle_pr_feedback"
-                                save_attempt_feedback "$ISSUE" "$ATTEMPT" "pr_feedback" "failed" "Failed to execute handle_pr_feedback command" ""
+                                log_error "Failed to execute /handle-pr-feedback"
+                                save_attempt_feedback "$ISSUE" "$ATTEMPT" "pr_feedback" "failed" "Failed to execute handle-pr-feedback skill" ""
                                 gh_update_label "$ISSUE" "needs-human-review" "pr-submitted"
                                 gh_add_comment "$ISSUE" "⚠️ Failed to process @claude feedback. Needs human review."
                                 break

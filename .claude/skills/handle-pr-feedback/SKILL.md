@@ -1,5 +1,8 @@
 ---
-description: Handle PR feedback from @claude reviews - update plan and implement changes
+name: handle-pr-feedback
+description: Fetch PR review feedback, implement the requested changes, commit, push, and re-request review. Explicit-only; run only when invoked via /handle-pr-feedback or explicitly asked.
+argument-hint: [pr-number]
+disable-model-invocation: true
 ---
 
 # Handle PR Feedback
@@ -9,9 +12,9 @@ You are tasked with handling feedback from @claude's PR review. This command fet
 ## Command Usage
 
 ```bash
-/handle_pr_feedback <pr-number>
+/handle-pr-feedback <pr-number>
 # Or auto-detect from current branch:
-/handle_pr_feedback
+/handle-pr-feedback
 ```
 
 ## Steps to Follow
@@ -225,7 +228,7 @@ Show the user:
 📤 Pushed to: <branch-name>
 💬 Re-review requested from @claude
 
-Next: Wait for @claude's re-review, or run `/handle_pr_feedback` again if more feedback arrives.
+Next: Wait for @claude's re-review, or run `/handle-pr-feedback` again if more feedback arrives.
 ```
 
 ## Important Notes
@@ -261,7 +264,7 @@ Next: Wait for @claude's re-review, or run `/handle_pr_feedback` again if more f
 
 ```bash
 # User runs command
-/handle_pr_feedback 42
+/handle-pr-feedback 42
 
 # Output:
 📥 Fetching PR #42 feedback...

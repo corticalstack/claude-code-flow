@@ -1,6 +1,9 @@
 ---
-description: Iterate on existing implementation plans with thorough research and updates
+name: iterate-plan
+description: Revise an existing implementation plan in flow/plans/ based on feedback, researching when needed. Explicit-only; run only when invoked via /iterate-plan or explicitly asked.
+argument-hint: [plan-file-path]
 model: opus
+disable-model-invocation: true
 ---
 
 # Iterate Implementation Plan
@@ -221,13 +224,13 @@ When spawning research sub-tasks:
 
 **Scenario 1: User provides everything upfront**
 ```
-User: /iterate_plan flow/plans/2025-10-16-feature.md - add phase for error handling
+User: /iterate-plan flow/plans/2025-10-16-feature.md - add phase for error handling
 Assistant: [Reads plan, researches error handling patterns, updates plan]
 ```
 
 **Scenario 2: User provides just plan file**
 ```
-User: /iterate_plan flow/plans/2025-10-16-feature.md
+User: /iterate-plan flow/plans/2025-10-16-feature.md
 Assistant: I've found the plan. What changes would you like to make?
 User: Split Phase 2 into two phases - one for backend, one for frontend
 Assistant: [Proceeds with update]
@@ -235,7 +238,7 @@ Assistant: [Proceeds with update]
 
 **Scenario 3: User provides no arguments**
 ```
-User: /iterate_plan
+User: /iterate-plan
 Assistant: Which plan would you like to update? Please provide the path...
 User: flow/plans/2025-10-16-feature.md
 Assistant: I've found the plan. What changes would you like to make?

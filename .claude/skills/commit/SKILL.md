@@ -1,5 +1,7 @@
 ---
-description: Create git commits with user approval and no Claude attribution
+name: commit
+description: Stage and create git commits after showing a commit plan, with no AI attribution. Explicit-only; run only when the user invokes /commit or asks to commit, never autonomously.
+disable-model-invocation: true
 ---
 
 # Commit Changes

@@ -1,5 +1,8 @@
 ---
-description: Validate implementation against plan, verify success criteria, identify issues
+name: validate-plan
+description: Validate an implementation against its plan, run verification commands, and report issues before commit. Explicit workflow command; run only when invoked via /validate-plan or explicitly asked.
+argument-hint: [plan-file-path]
+disable-model-invocation: true
 ---
 
 # Validate Plan
@@ -170,11 +173,11 @@ Always verify:
 ## Relationship to Other Commands
 
 Recommended workflow:
-1. `/implement_plan` - Execute the implementation
-2. `/validate_plan` - Verify implementation correctness (quality gate)
+1. `/implement-plan` - Execute the implementation
+2. `/validate-plan` - Verify implementation correctness (quality gate)
 3. Fix any issues found during validation
 4. `/commit` - Create atomic commits for changes (only after validation passes)
-5. `/describe_pr` - Generate PR description
+5. `/describe-pr` - Generate PR description
 
 Validation works best on uncommitted changes, acting as a quality gate before creating commits. This ensures a cleaner git history without "fix validation issues" commits. Use `git diff` to analyze what was implemented.
 

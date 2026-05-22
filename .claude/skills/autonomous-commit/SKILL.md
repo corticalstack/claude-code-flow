@@ -1,5 +1,7 @@
 ---
-description: Autonomously create git commits without user approval (for Ralph workflow)
+name: autonomous-commit
+description: Create git commits autonomously without user approval, for the Ralph autonomous loop. Explicit-only command; run only when invoked via /autonomous-commit, never autonomously in interactive use.
+disable-model-invocation: true
 ---
 
 # Autonomous Commit

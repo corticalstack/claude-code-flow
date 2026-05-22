@@ -1,5 +1,8 @@
 ---
-description: Resume work from handoff document with context analysis and validation
+name: resume-handoff
+description: Resume work from a handoff document, validating current state against it before continuing. Explicit-only; run only when invoked via /resume-handoff or explicitly asked.
+argument-hint: [handoff-file-or-issue-number]
+disable-model-invocation: true
 ---
 
 # Resume work from a handoff document
@@ -36,8 +39,8 @@ I'll help you resume work from a handoff document.
 Which handoff would you like to resume from?
 
 Tip: You can invoke this command directly with:
-- A handoff path: `/resume_handoff flow/handoffs/gh-123/2025-01-08_description.md`
-- A GitHub issue number: `/resume_handoff 123` or `/resume_handoff gh-123`
+- A handoff path: `/resume-handoff flow/handoffs/gh-123/2025-01-08_description.md`
+- A GitHub issue number: `/resume-handoff 123` or `/resume-handoff gh-123`
 ```
 
 Then wait for the user's input.
@@ -198,7 +201,7 @@ Then wait for the user's input.
 ## Example Interaction Flow
 
 ```
-User: /resume_handoff flow/handoffs/gh-42/2025-01-08_handoff.md
+User: /resume-handoff flow/handoffs/gh-42/2025-01-08_handoff.md
 Assistant: Let me read and analyze that handoff document...
 
 [Reads handoff completely]

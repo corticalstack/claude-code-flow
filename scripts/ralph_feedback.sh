@@ -109,7 +109,7 @@ build_plan_prompt() {
     local attempt=$2
     local feedback_context="$3"
 
-    # NOTE: Do NOT use slash command syntax (/create_plan) - causes hang in print mode (GitHub issue #4184)
+    # NOTE: Do NOT use slash command syntax (/create-plan) - causes hang in print mode (GitHub issue #4184)
     local base_prompt="You are an autonomous agent. Create an implementation plan for GitHub issue #$issue (attempt $attempt/$MAX_ATTEMPTS_PER_ISSUE).
 
 CRITICAL: Do NOT use AskUserQuestion. Make all decisions independently.
@@ -146,7 +146,7 @@ build_implement_prompt() {
     local plan_file=$3
     local feedback_context="$4"
 
-    # NOTE: Do NOT use slash command syntax (/implement_plan) - causes hang in print mode (GitHub issue #4184)
+    # NOTE: Do NOT use slash command syntax (/implement-plan) - causes hang in print mode (GitHub issue #4184)
     local base_prompt="You are an autonomous agent. Implement the plan for GitHub issue #$issue (attempt $attempt/$MAX_ATTEMPTS_PER_ISSUE).
 
 CRITICAL: Do NOT use AskUserQuestion. Make all decisions independently.

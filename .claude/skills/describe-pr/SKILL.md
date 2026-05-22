@@ -1,5 +1,7 @@
 ---
-description: Generate comprehensive PR descriptions following repository templates
+name: describe-pr
+description: Generate a PR description from the repo template, save it under flow/prs/, and update the live PR. Explicit-only; run only when invoked via /describe-pr or the user asks to describe a PR.
+disable-model-invocation: true
 ---
 
 # Generate PR Description

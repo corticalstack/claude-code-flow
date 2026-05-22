@@ -1,5 +1,7 @@
 ---
-description: Create handoff document for transferring work to another session
+name: create-handoff
+description: Write a structured handoff document under flow/handoffs/ to transfer work to another session. Explicit-only; run only when invoked via /create-handoff or the user asks for a handoff.
+disable-model-invocation: true
 ---
 
 # Create Handoff
@@ -71,14 +73,14 @@ Once this is completed, you should respond to the user with:
 ```
 Handoff created! You can resume from this handoff in a new session with:
 
-/resume_handoff <path/to/handoff.md>
+/resume-handoff <path/to/handoff.md>
 ```
 
 For example:
 ```
 Handoff created! You can resume from this handoff in a new session with:
 
-/resume_handoff flow/handoffs/gh-123/2025-01-08_13-44-55_implement-streaming-api.md
+/resume-handoff flow/handoffs/gh-123/2025-01-08_13-44-55_implement-streaming-api.md
 ```
 
 ---

@@ -1,5 +1,8 @@
 ---
-description: Implement technical plans from flow/plans with verification
+name: implement-plan
+description: Execute an implementation plan from flow/plans/ phase by phase, pausing for verification between phases. Explicit workflow command; run only when invoked via /implement-plan or explicitly asked, never autonomously.
+argument-hint: [plan-file-path]
+disable-model-invocation: true
 ---
 
 # Implement Plan
