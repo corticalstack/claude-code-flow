@@ -6,6 +6,9 @@
 # Claude Code local settings (user-specific)
 .claude/settings.local.json
 
+# Cross-vendor review user profiles (endpoint URLs may identify private Azure resources)
+.claude/skills/cross-review/profiles.json
+
 # Ralph runtime state
 .ralph/
 
