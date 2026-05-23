@@ -15,6 +15,7 @@ Each workflow stage in [AGENTS.md](AGENTS.md) is an explicit-invocation skill in
 | Plan | [`/create-plan <issue URL>`](.claude/skills/create-plan/SKILL.md) | `flow/plans/` |
 | Implement | [`/implement-plan <plan path>`](.claude/skills/implement-plan/SKILL.md) | code, tests |
 | Validate | [`/validate-plan <plan path>`](.claude/skills/validate-plan/SKILL.md) | quality gate |
+| Cross-vendor review (optional) | [`/cross-review [profile]`](.claude/skills/cross-review/SKILL.md) | `flow/reviews/` |
 | PR description | [`/describe-pr`](.claude/skills/describe-pr/SKILL.md) | `flow/prs/` |
 | PR feedback | [`/handle-pr-feedback`](.claude/skills/handle-pr-feedback/SKILL.md) | code, plan updates |
 

@@ -1,0 +1,38 @@
+{
+  "_comment": "Cross-vendor review profiles. Copy this file to profiles.json (gitignored) and edit endpoints and models. All backends use OAuth; no static API keys go here. Ensure 'az login' (Foundry), 'gh auth login' (GitHub Models), or 'copilot auth login' (Copilot CLI) is done for whichever backends you use.",
+  "default": "foundry-gpt4o",
+  "profiles": {
+    "foundry-gpt4o": {
+      "_comment": "Azure AI Foundry next-gen, OpenAI-compatible v1 endpoint. Recommended. No api-version needed (the /openai/v1/ path IS the version). Entra token scope: https://ai.azure.com/.default.",
+      "backend": "azure-foundry-openai",
+      "endpoint": "https://YOUR-RESOURCE.openai.azure.com",
+      "deployment": "gpt-4o"
+    },
+    "foundry-o3": {
+      "backend": "azure-foundry-openai",
+      "endpoint": "https://YOUR-RESOURCE.openai.azure.com",
+      "deployment": "o3"
+    },
+    "foundry-llama-inference": {
+      "_comment": "Legacy AI Inference endpoint (/models/chat/completions). DEPRECATED - retires 2026-08-26. Use azure-foundry-openai when your model is available there.",
+      "backend": "azure-foundry-inference",
+      "endpoint": "https://YOUR-PROJECT.services.ai.azure.com",
+      "model": "Meta-Llama-3.1-70B-Instruct",
+      "api_version": "2024-05-01-preview"
+    },
+    "github-o3-mini": {
+      "_comment": "GitHub Models via gh OAuth token. Pick any model from the GitHub Models catalog.",
+      "backend": "github-models",
+      "model": "openai/o3-mini"
+    },
+    "github-gpt4o": {
+      "backend": "github-models",
+      "model": "openai/gpt-4o"
+    },
+    "copilot-auto": {
+      "_comment": "GitHub Copilot CLI as the reviewer (uses your Copilot subscription). 'auto' lets Copilot pick the model; or specify e.g. 'gpt-4o'.",
+      "backend": "copilot-cli",
+      "model": "auto"
+    }
+  }
+}
