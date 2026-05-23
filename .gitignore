@@ -15,6 +15,9 @@ logs/
 # Local research / implementation tracker (working doc, intentionally not committed)
 flow/research/2026-05-21-agentic-coding-state-of-the-art.md
 
+# Local manual test plans (working notes; not committed)
+flow/tests/
+
 # Python
 __pycache__/
 *.py[cod]
