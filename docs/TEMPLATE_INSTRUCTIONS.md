@@ -1,6 +1,6 @@
 # Template Setup Guide
 
-This guide walks you through setting up a project created from the `claude-code-flow` template.
+This guide walks you through setting up a project created from the `flow` template.
 
 > **You are here because**: You clicked *Use this template* and created a new project. Now you need to configure it for development.
 
