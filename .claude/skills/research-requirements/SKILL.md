@@ -1,7 +1,7 @@
 ---
 name: research-requirements
 description: Research requirements, technology choices, and constraints for a feature or project and write findings under flow/research/. Explicit workflow command; run only when invoked via /research-requirements or explicitly asked.
-argument-hint: [github-issue-url-or-description]
+argument-hint: [issue-url-or-description]
 model: opus
 disable-model-invocation: true
 ---
@@ -21,14 +21,14 @@ This command researches and documents:
 When this command is invoked:
 
 1. **Check if parameters were provided**:
-   - If a GitHub issue URL or project description was provided, proceed immediately
+   - If a tracker URL or project description was provided, proceed immediately
    - Read/fetch input FULLY before spawning sub-tasks
 
 2. **If no parameters provided**, respond with:
 ```
 I'm ready to research requirements for a new project or feature. Please provide:
 - A project description, OR
-- A GitHub issue URL with requirements
+- An issue / work-item URL with requirements (any supported tracker)
 
 I'll research technology options, constraints, and existing solutions to inform planning.
 ```
@@ -39,9 +39,9 @@ Then wait for user input.
 
 ### Step 1: Parse Input Source
 
-- If GitHub URL:
-  - Fetch issue content with `gh issue view <number> --json title,body,labels,comments`
-  - Update issue label: `gh issue edit <number> --add-label "research-in-progress"`
+- If a tracker URL or work-item id was provided:
+  - Fetch the work-item content: `bash .claude/scripts/tracker.sh view <id> --json title,body,state,comments`
+  - Transition state: `bash .claude/scripts/tracker.sh set-state <id> research-in-progress`
 - If plain text: use as-is
 - **CRITICAL**: Read/fetch input FULLY before spawning sub-tasks
 
@@ -97,7 +97,7 @@ Collect metadata for the output document:
 - Get git commit hash: `git rev-parse HEAD`
 - Get current branch: `git branch --show-current`
 - Get repository name: `basename $(git rev-parse --show-toplevel)`
-- Extract GitHub issue number (if applicable)
+- Extract tracker work-item id (if applicable)
 
 Generate filename using this convention:
 ```
@@ -105,7 +105,7 @@ flow/research/YYYY-MM-DD-gh-[issue-number]-[description].md
 ```
 
 - `YYYY-MM-DD` - today's date
-- `gh-[issue-number]` - GitHub issue number (omit if no issue)
+- `gh-[issue-number]` - tracker work-item id (omit if no work item; the literal "gh-" prefix is a stable filename convention)
 - `[description]` - brief kebab-case description
 
 Examples:
@@ -132,7 +132,7 @@ status: complete
 # Requirements Research: [Project/Feature Name]
 
 ## Original Request
-[User's input or GitHub issue content]
+[User's input or tracker work-item content]
 
 ## Summary
 [High-level findings and recommendations - 2-3 paragraphs]
@@ -182,8 +182,8 @@ status: complete
 
 After writing the document:
 
-1. **Update GitHub issue label** (if applicable):
-   - Replace label: `gh issue edit <number> --add-label "research-complete" --remove-label "research-in-progress"`
+1. **Transition the work-item state** (if applicable):
+   - `bash .claude/scripts/tracker.sh set-state <id> research-complete research-in-progress`
 
 2. **Present summary to user**:
 ```

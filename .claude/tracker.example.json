@@ -1,0 +1,21 @@
+{
+  "_comment": "Tracker config for the workflow skills. Copy this file to .claude/tracker.json (which is gitignored) and edit. The .json file overrides this example; if neither exists, the default backend is 'github' using the gh CLI's default repo context.",
+  "tracker": "github",
+  "github": {
+    "_comment": "When tracker='github', the 'gh' CLI's default repo context is used. Run 'gh repo set-default' to pin it if needed. owner/repo here are informational only at the moment - the adapter does not yet enforce them. Authenticate with 'gh auth login'."
+  },
+  "azure-devops": {
+    "_comment": "When tracker='azure-devops' (planned for PR 2). Set the organization and project. Authenticate with 'az login' and 'az devops configure --defaults organization=https://dev.azure.com/<org> project=<project>'. state_transitions optionally maps a neutral workflow state to an Azure DevOps typed State transition; tags are always added/removed regardless.",
+    "organization": "https://dev.azure.com/YOUR-ORG",
+    "project": "YOUR-PROJECT",
+    "state_transitions": {
+      "research-in-progress": { "state": "Active" },
+      "in-progress": { "state": "Active" },
+      "pr-submitted": { "state": "Resolved" },
+      "pr-merged": { "state": "Closed" }
+    }
+  },
+  "none": {
+    "_comment": "When tracker='none', the workflow skills operate without an issue tracker: state-update calls are no-ops, query calls return empty JSON. Use this for greenfield projects or local-only work."
+  }
+}

@@ -12,8 +12,8 @@ You are tasked with writing a handoff document to hand off your work to another 
 ## Process
 ### 1. Filepath & Metadata
 Use the following information to understand how to create your document:
-    - Create your file under `flow/handoffs/gh-<number>/YYYY-MM-DD_HH-MM-SS_description.md`, where:
-        - `gh-<number>` is the GitHub issue number (use `general` if no issue)
+    - Create your file under `flow/handoffs/gh-<id>/YYYY-MM-DD_HH-MM-SS_description.md`, where:
+        - `gh-<id>` uses the tracker work-item id (use `general` if no tracker reference). The literal `gh-` prefix is a stable filename convention across the repo regardless of which tracker the project uses.
         - YYYY-MM-DD is today's date
         - HH-MM-SS is the hours, minutes and seconds based on the current time, in 24-hour format
         - description is a brief kebab-case description
@@ -22,8 +22,8 @@ Use the following information to understand how to create your document:
         - `git branch --show-current` for branch name
         - `git remote get-url origin` for repository
     - Examples:
-        - With issue: `flow/handoffs/gh-123/2025-01-08_13-55-22_implement-streaming-api.md`
-        - Without issue: `flow/handoffs/general/2025-01-08_13-55-22_refactor-config.md`
+        - With a tracker work item: `flow/handoffs/gh-123/2025-01-08_13-55-22_implement-streaming-api.md`
+        - Without a tracker reference: `flow/handoffs/general/2025-01-08_13-55-22_refactor-config.md`
 
 ### 2. Handoff writing
 Using the above conventions, write your document. Use the defined filepath and the following YAML frontmatter pattern:

@@ -6,7 +6,7 @@ Claude-Code-specific guidance. The shared, tool-agnostic project rules live in [
 
 ## Workflow skills
 
-Each workflow stage in [AGENTS.md](AGENTS.md) is an explicit-invocation skill in [.claude/skills/](.claude/skills/) (the Agent Skills open standard, so the same files are also picked up by Copilot CLI and other compatible tools). Invoking one creates the `flow/` artifacts and, when given a GitHub issue URL or number, updates the issue labels automatically. Each sets `disable-model-invocation: true`, so it runs only when you invoke it explicitly, never autonomously.
+Each workflow stage in [AGENTS.md](AGENTS.md) is an explicit-invocation skill in [.claude/skills/](.claude/skills/) (the Agent Skills open standard, so the same files are also picked up by Copilot CLI and other compatible tools). Invoking one creates the `flow/` artifacts and, when given a tracker URL or work-item id, transitions the tracker state automatically (via [.claude/scripts/tracker.sh](.claude/scripts/tracker.sh); see [docs/tracker-portability.md](docs/tracker-portability.md) for the supported backends). Each sets `disable-model-invocation: true`, so it runs only when you invoke it explicitly, never autonomously.
 
 | Stage | Command | Artifact |
 |---|---|---|

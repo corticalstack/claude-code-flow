@@ -1,7 +1,7 @@
 ---
 name: create-plan
-description: Research the codebase and author a phased implementation plan under flow/plans/ from a GitHub issue or task. Explicit workflow command; run only when invoked via /create-plan or explicitly asked, never autonomously.
-argument-hint: [github-issue-url-or-number]
+description: Research the codebase and author a phased implementation plan under flow/plans/ from an issue / work item or task. Explicit workflow command; run only when invoked via /create-plan or explicitly asked, never autonomously.
+argument-hint: [issue-url-or-id]
 model: opus
 disable-model-invocation: true
 ---
@@ -139,13 +139,13 @@ When this command is invoked:
 I'll help you create a detailed implementation plan. Let me start by understanding what we're building.
 
 Please provide:
-1. A GitHub issue URL or number (e.g., #123)
+1. An issue / work-item URL or id (e.g., #123 on GitHub, or an Azure DevOps work item URL)
 2. Or a task description with relevant context and constraints
 3. Links to related research or previous implementations
 
 I'll analyze this information and work with you to create a comprehensive plan.
 
-Tip: You can invoke this command with a GitHub issue: `/create-plan #123` or `/create-plan https://github.com/owner/repo/issues/123`
+Tip: You can invoke this with an issue / work-item reference: `/create-plan #123`, a full URL like `/create-plan https://github.com/owner/repo/issues/123` (GitHub), or `/create-plan https://dev.azure.com/org/project/_workitems/edit/123` (Azure DevOps)
 For deeper analysis, try: `/create-plan think deeply about #123`
 ```
 
@@ -155,12 +155,12 @@ Then wait for the user's input.
 
 ### Step 1: Context Gathering & Initial Analysis
 
-1. **Fetch GitHub issue if provided**:
-   - If a GitHub issue URL or number is provided:
-     - Fetch it: `gh issue view <number> --json title,body,labels,comments`
-     - Update label: `gh issue edit <number> --add-label "planning-in-progress" --remove-label "research-complete"`
-   - Read the issue content fully before proceeding
-   - Note any linked issues, PRs, or references mentioned
+1. **Fetch the work item if provided**:
+   - If a tracker URL or work-item id is provided:
+     - Fetch it: `bash .claude/scripts/tracker.sh view <id> --json title,body,state,comments`
+     - Transition state: `bash .claude/scripts/tracker.sh set-state <id> planning-in-progress research-complete`
+   - Read the content fully before proceeding
+   - Note any linked work items, PRs, or references mentioned
 
 2. **Read all mentioned files immediately and FULLY**:
    - Research documents (e.g., `flow/research/...`)
@@ -291,7 +291,7 @@ After structure approval:
 1. **Write the plan** to `flow/plans/YYYY-MM-DD-gh-[issue]-[description].md`
    - Format: `YYYY-MM-DD-gh-[issue]-[description].md` where:
      - YYYY-MM-DD is today's date
-     - gh-[issue] is the GitHub issue number (omit if no issue)
+     - gh-[issue] is the tracker work-item id (omit if no work item; the literal "gh-" prefix is a stable filename convention across the repo regardless of tracker)
      - description is a brief kebab-case description
    - Examples:
      - With issue: `flow/plans/2026-01-12-gh-1-research-requirements-command.md`
@@ -412,7 +412,7 @@ After structure approval:
 
 ## References
 
-- GitHub issue: https://github.com/[owner]/[repo]/issues/[number]
+- Tracker work item: https://github.com/[owner]/[repo]/issues/[number] (GitHub example - substitute the URL shape for your tracker)
 - Related research: `flow/research/[relevant].md`
 - Similar implementation: `[file:line]`
 ````
@@ -439,8 +439,8 @@ After structure approval:
 
 3. **Continue refining** until the user is satisfied
 
-4. **Update GitHub issue label** (if applicable):
-   - Once the plan is finalized and approved: `gh issue edit <number> --add-label "ready-for-dev" --remove-label "planning-in-progress"`
+4. **Transition the work-item state** (if applicable):
+   - Once the plan is finalized and approved: `bash .claude/scripts/tracker.sh set-state <id> ready-for-dev planning-in-progress`
 
 ## Important Guidelines
 
@@ -584,11 +584,11 @@ tasks = [
 
 ```
 User: /create-plan #1
-Assistant: Let me fetch that GitHub issue and understand what we're building...
+Assistant: Let me fetch that work item and understand what we're building...
 
-[Fetches issue with gh issue view 1]
+[Fetches with `bash .claude/scripts/tracker.sh view 1`]
 
-Based on the issue, I understand we need to create a /research-requirements command for greenfield projects. Let me research the codebase to understand the existing patterns...
+Based on the work item, I understand we need to create a /research-requirements skill for greenfield projects. Let me research the codebase to understand the existing patterns...
 
 [Spawns research agents]
 
