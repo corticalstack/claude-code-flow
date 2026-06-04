@@ -1,7 +1,7 @@
 ---
 name: resume-handoff
 description: Resume work from a handoff document, validating current state against it before continuing. Explicit-only; run only when invoked via /resume-handoff or explicitly asked.
-argument-hint: [handoff-file-or-issue-number]
+argument-hint: [handoff-file-or-work-item-id]
 disable-model-invocation: true
 ---
 
@@ -20,8 +20,8 @@ When this command is invoked:
    - Begin the analysis process by ingesting relevant context from the handoff document, reading additional files it mentions
    - Then propose a course of action to the user and confirm, or ask for clarification on direction.
 
-2. **If a GitHub issue number (like gh-123 or just 123) was provided**:
-   - Locate the most recent handoff document for the issue at `flow/handoffs/gh-<number>/`
+2. **If a tracker work-item id (like gh-123 or just 123) was provided**:
+   - Locate the most recent handoff document for the work item at `flow/handoffs/gh-<id>/`
    - **List this directory's contents.**
    - There may be zero, one or multiple files in the directory.
    - **If there are zero files in the directory, or the directory does not exist**: tell the user: "I can't find a handoff document for that issue. Can you provide a path to it?"
@@ -40,7 +40,7 @@ Which handoff would you like to resume from?
 
 Tip: You can invoke this command directly with:
 - A handoff path: `/resume-handoff flow/handoffs/gh-123/2025-01-08_description.md`
-- A GitHub issue number: `/resume-handoff 123` or `/resume-handoff gh-123`
+- A tracker work-item id: `/resume-handoff 123` or `/resume-handoff gh-123`
 ```
 
 Then wait for the user's input.

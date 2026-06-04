@@ -9,6 +9,9 @@
 # Cross-vendor review user profiles (endpoint URLs may identify private Azure resources)
 .claude/skills/cross-review/profiles.json
 
+# Tracker config (user-specific; may identify private orgs / projects)
+.claude/tracker.json
+
 # Ralph runtime state
 .ralph/
 

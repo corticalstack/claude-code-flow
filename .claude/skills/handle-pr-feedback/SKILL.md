@@ -25,17 +25,18 @@ You are tasked with handling feedback from @claude's PR review. This command fet
 - Use the provided PR number
 
 **If no PR number provided:**
-- Auto-detect from current branch: `gh pr view --json number,title,headRefName 2>/dev/null`
+- Auto-detect from current branch: `bash .claude/scripts/tracker.sh pr-current --json number,title,headRefName 2>/dev/null`
 - If multiple PRs or unclear, ask user which PR to handle
 
 ### 2. Fetch PR Review Feedback
 
 ```bash
-# Get PR review comments
-gh pr view <pr-number> --json reviews,comments --jq '.reviews[] | select(.author.login == "claude-code[bot]" or .body | contains("@claude"))'
+# Get PR reviews + comments. The author.login filter for "claude-code[bot]" / "@claude"
+# is GitHub-Actions-specific; substitute for other trackers / review systems.
+bash .claude/scripts/tracker.sh pr-view <pr-id> --json reviews,comments | jq '.reviews[] | select(.author.login == "claude-code[bot]" or .body | contains("@claude"))'
 
 # Also get inline review comments
-gh api repos/:owner/:repo/pulls/<pr-number>/comments
+bash .claude/scripts/tracker.sh pr-review-comments <pr-id>
 ```
 
 **Parse the feedback:**
@@ -45,7 +46,7 @@ gh api repos/:owner/:repo/pulls/<pr-number>/comments
 - Extract specific file locations and suggested fixes
 
 **If no feedback found:**
-- Check if review is still pending: `gh pr view <pr-number> --json reviewDecision`
+- Check if review is still pending: `bash .claude/scripts/tracker.sh pr-decision <pr-id>`
 - If APPROVED: notify user "PR already approved, no changes needed"
 - If CHANGES_REQUESTED but no comments: ask user to specify what to fix
 - If pending: notify user to wait for review to complete
@@ -55,16 +56,16 @@ gh api repos/:owner/:repo/pulls/<pr-number>/comments
 ```bash
 # Look for plan file related to this PR
 # Strategy 1: Check PR description for plan reference
-gh pr view <pr-number> --json body | grep -o "flow/plans/[^)]*"
+bash .claude/scripts/tracker.sh pr-view <pr-id> --json body | grep -o "flow/plans/[^)]*"
 
-# Strategy 2: Get issue number from PR title/body
-gh pr view <pr-number> --json title,body | grep -o "#[0-9]*" | head -1
+# Strategy 2: Get work-item id from PR title/body
+bash .claude/scripts/tracker.sh pr-view <pr-id> --json title,body | grep -o "#[0-9]*" | head -1
 
-# Then find plan:
-ls flow/plans/*-gh-<issue-number>-*.md 2>/dev/null
+# Then find plan (gh-<n> filename prefix is a stable convention regardless of tracker):
+ls flow/plans/*-gh-<work-item-id>-*.md 2>/dev/null
 
 # Strategy 3: Check commits for plan references
-gh pr view <pr-number> --json commits | grep -o "flow/plans/[^)]*"
+bash .claude/scripts/tracker.sh pr-view <pr-id> --json commits | grep -o "flow/plans/[^)]*"
 ```
 
 **If plan not found:**
@@ -188,8 +189,9 @@ git push
 ### 10. Request Re-review
 
 ```bash
-# Comment on the PR to request re-review
-gh pr comment <pr-number> --body "@claude I've addressed your feedback in the latest commit. Please re-review:
+# Comment on the PR to request re-review (the '@claude' tag triggers the
+# Claude Code GitHub Action; substitute the equivalent for other systems).
+bash .claude/scripts/tracker.sh pr-comment <pr-id> "@claude I've addressed your feedback in the latest commit. Please re-review:
 
 Changes made:
 - <change 1>
@@ -198,13 +200,13 @@ Changes made:
 All tests passing ✅"
 ```
 
-### 11. Update Plan Labels (if GitHub issue exists)
+### 11. Update Work-Item State (if PR is linked to a work item)
 
 ```bash
-# Get linked issue number
-gh pr view <pr-number> --json closingIssuesReferences --jq '.closingIssuesReferences[].number'
+# Get linked work-item ids
+bash .claude/scripts/tracker.sh pr-closing-issues <pr-id>
 
-# Keep issue in 'in-progress' (already there, no change needed)
+# Keep work item in 'in-progress' (already there, no change needed)
 ```
 
 ### 12. Report Summary

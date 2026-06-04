@@ -130,17 +130,17 @@ Create comprehensive validation summary:
 - Document new API endpoints
 ```
 
-### Step 4: Update GitHub Issue Label
+### Step 4: Update Work-Item State
 
 Based on validation results:
 
 **If validation fails** (automated checks fail, critical issues found):
 ```bash
-gh issue edit <number> --add-label "validation-failed" --remove-label "in-progress"
+bash .claude/scripts/tracker.sh set-state <id> validation-failed in-progress
 ```
 
 **If validation passes** (all automated checks pass, ready for PR):
-- Keep `in-progress` label (will be updated to `pr-submitted` after PR creation)
+- Keep `in-progress` state (it will be transitioned to `pr-submitted` after PR creation)
 - Validation passing doesn't mean implementation is done - it means it's ready for code review via PR
 
 ## Working with Existing Context

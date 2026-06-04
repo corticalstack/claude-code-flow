@@ -1,7 +1,7 @@
 ---
 name: research-codebase
 description: Document the codebase as-is via parallel read-only sub-agents and write findings under flow/research/. Explicit workflow command; run only when invoked via /research-codebase or explicitly asked.
-argument-hint: [github-issue-url-or-question]
+argument-hint: [issue-url-or-question]
 model: opus
 disable-model-invocation: true
 ---
@@ -31,9 +31,9 @@ Then wait for the user's research query.
 ## Steps to follow after receiving the research query:
 
 1. **Read any directly mentioned files first:**
-   - If the research query is a GitHub issue URL or number:
-     - Fetch issue content with `gh issue view <number> --json title,body,labels,comments`
-     - Update issue label: `gh issue edit <number> --add-label "research-in-progress"`
+   - If the research query is a tracker URL or work-item id:
+     - Fetch work-item content: `bash .claude/scripts/tracker.sh view <id> --json title,body,state,comments`
+     - Transition state: `bash .claude/scripts/tracker.sh set-state <id> research-in-progress`
    - If the user mentions specific files (tickets, docs, JSON), read them FULLY first
    - **IMPORTANT**: Use the Read tool WITHOUT limit/offset parameters to read entire files
    - **CRITICAL**: Read these files yourself in the main context before spawning any sub-tasks
@@ -92,7 +92,7 @@ Then wait for the user's research query.
    - Filename: `flow/research/YYYY-MM-DD-gh-<number>-description.md`
      - Format: `YYYY-MM-DD-gh-<number>-description.md` where:
        - YYYY-MM-DD is today's date
-       - gh-<number> is the GitHub issue number (omit if no issue)
+       - gh-<number> is the tracker work-item id (omit if no work item; the literal "gh-" prefix is a stable filename convention)
        - description is a brief kebab-case description of the research topic
      - Examples:
        - With issue: `flow/research/2025-01-08-gh-42-parent-child-tracking.md`
@@ -158,15 +158,14 @@ Then wait for the user's research query.
      [Any areas that need further investigation]
      ```
 
-7. **Add GitHub permalinks (if applicable):**
+7. **Add repository permalinks (if applicable; GitHub URL shape shown - substitute for other hosts):**
    - Check if on main branch or if commit is pushed: `git branch --show-current` and `git status`
-   - If on main/master or pushed, generate GitHub permalinks:
-     - Get repo info: `gh repo view --json owner,name`
-     - Create permalinks: `https://github.com/{owner}/{repo}/blob/{commit}/{file}#L{line}`
+   - For GitHub, get repo info: `bash .claude/scripts/tracker.sh repo-info` and form permalinks: `https://github.com/{owner}/{repo}/blob/{commit}/{file}#L{line}`
+   - For other hosts, substitute the appropriate URL shape (e.g. Azure DevOps: `https://dev.azure.com/{org}/{project}/_git/{repo}?path=/{file}&version=GC{commit}&line={line}`)
    - Replace local file references with permalinks in the document
 
 8. **Present findings:**
-   - Update GitHub issue label (if applicable): `gh issue edit <number> --add-label "research-complete" --remove-label "research-in-progress"`
+   - Transition the work-item state (if applicable): `bash .claude/scripts/tracker.sh set-state <id> research-complete research-in-progress`
    - Present a concise summary of findings to the user
    - Include key file references for easy navigation
    - Ask if they have follow-up questions or need clarification
@@ -188,7 +187,7 @@ Then wait for the user's research query.
 - Each sub-agent prompt should be specific and focused on read-only documentation operations
 - Document cross-component connections and how systems interact
 - Include temporal context (when the research was conducted)
-- Link to GitHub when possible for permanent references
+- Link to the repository host when possible for permanent references
 - Keep the main agent focused on synthesis, not deep file reading
 - Have sub-agents document examples and usage patterns as they exist
 - Explore all of flow/ directory, not just research subdirectory

@@ -47,19 +47,23 @@ Fill in as the project gains them (package manager, formatters and linters, test
 - Reference code with line numbers: `path/to/file.ts:42`; use `#L50-L75` for ranges in links.
 - Keep instruction files (this file and CLAUDE.md) lean and hand-written, roughly 150 to 200 lines maximum. Generic or auto-generated guidance measurably reduces task success, so write only specific, load-bearing rules.
 
-## GitHub issue conventions
+## Work-item / issue conventions
 
-- Use navigable links for file references in issues, not just code-highlighted text.
+These apply to any tracker the project uses (GitHub Issues, Azure DevOps work items, GitLab issues, and so on).
+
+- Use navigable links for file references in work items, not just code-highlighted text.
   - Good: `[config.py](src/backend/config.py)` (clickable)
   - Avoid: `` `config.py` `` (highlighted but not navigable)
 - Link formats: relative `[config.py](src/backend/config.py)`; with line `[config.py:50](src/backend/config.py#L50)`; with range `[config.py:50-75](src/backend/config.py#L50-L75)`.
 
-## GitHub issue label lifecycle
+## Workflow state lifecycle
 
-Each workflow step updates issue labels to track progress:
+The workflow assumes an issue tracker (GitHub Issues, Azure DevOps work items, GitLab issues, and so on), but skills talk to it through a thin adapter at [.claude/scripts/tracker.sh](.claude/scripts/tracker.sh), so any backend can plug in. See [docs/tracker-portability.md](docs/tracker-portability.md) for the contract and supported backends.
+
+Each workflow step transitions a work item through these neutral states:
 
 ```
-New issue
+New work item
   ↓ research step
 research-in-progress → research-complete
   ↓ planning step
@@ -70,7 +74,7 @@ in-progress
 validation-failed OR pr-submitted
 ```
 
-Label meanings:
+State meanings:
 - `research-in-progress`: research underway
 - `research-complete`: research done, ready for planning
 - `planning-in-progress`: plan being created
@@ -79,6 +83,11 @@ Label meanings:
 - `validation-failed`: implementation failed validation
 - `implementation-failed`: implementation could not be completed
 - `pr-submitted`: PR created, awaiting review
+
+How each backend stores the state:
+- **GitHub**: labels with these exact names (1:1).
+- **Azure DevOps**: Tags (free-form, same names), optionally with typed State transitions (see [.claude/tracker.example.json](.claude/tracker.example.json)).
+- **`none`**: no state tracking; skills proceed without an issue tracker.
 
 ## Build and test commands
 

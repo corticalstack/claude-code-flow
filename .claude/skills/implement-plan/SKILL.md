@@ -15,7 +15,7 @@ When given a plan path:
 - Read the plan completely and check for any existing checkmarks (- [x])
 - Read the original ticket and all files mentioned in the plan
 - **Read files fully** - never use limit/offset parameters, you need complete context
-- **Update GitHub issue label** (if issue is referenced in plan): `gh issue edit <number> --add-label "in-progress" --remove-label "ready-for-dev"`
+- **Transition the work-item state** (if an issue / work item is referenced in the plan): `bash .claude/scripts/tracker.sh set-state <id> in-progress ready-for-dev`
 - Think deeply about how the pieces fit together
 - Create a todo list to track your progress
 - Start implementing if you understand what needs to be done
