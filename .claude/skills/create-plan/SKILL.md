@@ -123,7 +123,7 @@ Include comprehensive verification commands that check for ALL patterns:
 
 ### Reference Materials
 
-See detailed rename operation checklist: `/home/jp/.claude/projects/-home-jp-developments-jp-personal-claude-code-flow/memory/rename-operations.md`
+See detailed rename operation checklist: `/home/jp/.claude/projects/-home-jp-developments-jp-personal-flow/memory/rename-operations.md`
 
 ## Initial Response
 

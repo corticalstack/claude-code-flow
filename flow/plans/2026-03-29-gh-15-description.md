@@ -1,6 +1,6 @@
 # Implementation Plan: Python Log Parser CLI (#15)
 
-**Issue:** [#15 — Test: Create a Python log parser CLI that analyzes error patterns](https://github.com/anthropics/claude-code-flow/issues/15)
+**Issue:** [#15 — Test: Create a Python log parser CLI that analyzes error patterns](https://github.com/corticalstack/flow/issues/15)
 **Research:** [flow/research/2026-03-29-gh-15-description.md](../research/2026-03-29-gh-15-description.md)
 **Branch:** `feature/15-python-log-parser-cli`
 

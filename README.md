@@ -2,7 +2,7 @@
 
 > **⚠️ POST-TEMPLATE SETUP REQUIRED**
 >
-> You've created a project from the `claude-code-flow` template. **Replace this README** with your project documentation after setup.
+> You've created a project from the `flow` template. **Replace this README** with your project documentation after setup.
 >
 > **Complete Instructions**: [docs/TEMPLATE_INSTRUCTIONS.md](docs/TEMPLATE_INSTRUCTIONS.md)
 
@@ -10,7 +10,7 @@
 
 ## About This Template
 
-This project uses the **Claude Code Flow** template - a structured workflow for AI-assisted development with manual step-by-step commands or fully autonomous multi-issue processing.
+This project uses the **Flow** template - a structured workflow for AI-assisted development with manual step-by-step commands or fully autonomous multi-issue processing.
 
 ---
 
