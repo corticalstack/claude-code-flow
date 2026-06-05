@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Thin PATH wrapper around .claude/scripts/tracker.sh.
+#
+# When this plugin is installed in Claude Code, bin/ is automatically added
+# to the Bash tool's PATH, so skill bodies can call `tracker <subcommand>`
+# without a path prefix. When the repo is cloned directly (template-style),
+# the same wrapper works via `./bin/tracker <subcommand>`.
+#
+# Resolution: this wrapper sits at <plugin-root>/bin/tracker; the real
+# adapter is at <plugin-root>/.claude/scripts/tracker.sh. We resolve the
+# absolute path of *this* file's directory, then exec the adapter relative
+# to it.
+set -euo pipefail
+HERE="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec bash "${HERE}/../.claude/scripts/tracker.sh" "$@"

@@ -1,0 +1,23 @@
+{
+  "name": "flow",
+  "displayName": "Flow",
+  "version": "0.1.0",
+  "description": "A cross-tool agentic-coding workflow toolkit: 12 workflow skills (research / plan / implement / validate / commit / describe-pr / handle-pr-feedback / handoffs), an optional cross-vendor code-review skill, and a tracker abstraction (GitHub Issues, Azure DevOps work items, ...). Built on the Agent Skills open standard so the same files work in Claude Code and GitHub Copilot CLI.",
+  "author": {
+    "name": "corticalstack"
+  },
+  "homepage": "https://github.com/corticalstack/flow",
+  "repository": "https://github.com/corticalstack/flow",
+  "license": "MIT",
+  "keywords": [
+    "workflow",
+    "skills",
+    "agentic-coding",
+    "research-plan-implement-validate",
+    "cross-vendor-review",
+    "tracker-abstraction",
+    "agent-skills",
+    "agents-md"
+  ],
+  "skills": ".claude/skills/"
+}
