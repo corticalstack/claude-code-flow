@@ -67,11 +67,25 @@ neutral set-state <id> research-in-progress  ->  gh issue edit <id> --add-label 
 neutral set-state <id> research-complete research-in-progress  ->  gh issue edit <id> --add-label "research-complete" --remove-label "research-in-progress"
 ```
 
-### `azure-devops` (planned for PR 2; currently a stub)
+### `azure-devops` (wired)
 
-States become Azure DevOps **Tags** (free-form, kept as-is). Optionally, the config can map specific neutral states to typed **State** transitions (`New` -> `Active` -> `Resolved` -> `Closed`); see the `state_transitions` block in [.claude/tracker.example.json](../.claude/tracker.example.json).
+States become Azure DevOps **Tags** (free-form, kept as-is - one tag per neutral-state name). Optionally, the config maps specific neutral states to typed **System.State** transitions (`New` -> `Active` -> `Resolved` -> `Closed`); see the `state_transitions` block in [.claude/tracker.example.json](../.claude/tracker.example.json). When a mapping exists, `set-state` updates both the Tag set and System.State in a single `az boards work-item update` call.
 
-Authentication: `az login` and `az devops configure --defaults organization=<org> project=<project>`.
+Setup:
+
+```bash
+az login                                                                  # Entra ID OAuth
+az extension add --name azure-devops                                      # required extension
+az devops configure --defaults organization=https://dev.azure.com/<org> project=<project>
+```
+
+Implementation notes:
+
+- `set-state` reads the current `System.Tags` string (semicolon-space separated, per the REST API 7.1 contract), removes the optional `<old-state>` tag if present, appends `<new-state>` (deduped), and writes the full replacement string back. The API replaces, not appends, so the helper round-trips the string.
+- `pr-comment` and `pr-review-comments` route through `az devops invoke` against the REST API 7.1 `pullRequestThreads` resource - the CLI has no dedicated subcommand for either.
+- `pr-decision` derives the equivalent of GitHub's `reviewDecision` from reviewer-vote integers (10 = approved, -10 = rejected, ...); returns `APPROVED` / `CHANGES_REQUESTED` / `REVIEW_REQUIRED` in a JSON envelope shaped like the GitHub one.
+- `pr-diff` is git-side (`git diff origin/<target>...origin/<source>`) because `az repos pr diff` does not exist.
+- `repo-info` returns `{owner, project, name}` (with `owner` parsed from the repo's `remoteUrl`) - note the extra `project` field vs the GitHub shape.
 
 ### `none` (tracker-less projects)
 
