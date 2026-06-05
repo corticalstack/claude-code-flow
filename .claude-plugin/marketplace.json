@@ -1,0 +1,13 @@
+{
+  "name": "flow",
+  "owner": {
+    "name": "corticalstack"
+  },
+  "plugins": [
+    {
+      "name": "flow",
+      "source": ".",
+      "description": "A cross-tool agentic-coding workflow toolkit (12 workflow skills + optional cross-vendor review + tracker abstraction)."
+    }
+  ]
+}

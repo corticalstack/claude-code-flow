@@ -1,46 +1,102 @@
-# [Your Project Name Here]
+# Flow
 
-> **⚠️ POST-TEMPLATE SETUP REQUIRED**
->
-> You've created a project from the `flow` template. **Replace this README** with your project documentation after setup.
->
-> **Complete Instructions**: [docs/TEMPLATE_INSTRUCTIONS.md](docs/TEMPLATE_INSTRUCTIONS.md)
+A cross-tool agentic-coding workflow toolkit: 12 workflow skills (research → plan → implement → validate → review → ship), an optional cross-vendor code-review skill, and a tracker abstraction (GitHub Issues, Azure DevOps work items, GitLab issues, …) - all behind the [Agent Skills open standard](https://agentskills.io/specification) so the same files work in Claude Code and GitHub Copilot CLI.
 
----
+## Install
 
-## About This Template
+### Claude Code (plugin, recommended)
 
-This project uses the **Flow** template - a structured workflow for AI-assisted development with manual step-by-step commands or fully autonomous multi-issue processing.
-
----
-
-## Workflow Overview
-
-**Manual (step-by-step):**
-
-[/research-requirements](.claude/skills/research-requirements/SKILL.md) → [/create-plan](.claude/skills/create-plan/SKILL.md) → [/implement-plan](.claude/skills/implement-plan/SKILL.md) → [/validate-plan](.claude/skills/validate-plan/SKILL.md) → [/cross-review](.claude/skills/cross-review/SKILL.md) (optional, advisory) → [/commit](.claude/skills/commit/SKILL.md) → Push & PR → [/describe-pr](.claude/skills/describe-pr/SKILL.md) → Review → [/handle-pr-feedback](.claude/skills/handle-pr-feedback/SKILL.md) (if needed) → Merge
-
-**Autonomous (unattended):**
-```bash
-./scripts/ralph-autonomous.sh --monitor  # Launch with live dashboard
+```
+/plugin marketplace add corticalstack/flow
+/plugin install flow@flow
+/flow:init
 ```
 
-Processes up to 10 issues automatically with live monitoring, state management, and retry logic.
+`/flow:init` is an interactive bootstrap that creates `AGENTS.md` at your project root from Flow's template, creates `.claude/tracker.json` from the example, and optionally sets up cross-vendor review profiles.
 
-See [docs/TEMPLATE_INSTRUCTIONS.md](docs/TEMPLATE_INSTRUCTIONS.md) for complete documentation.
+### GitHub Copilot CLI
 
----
+```
+gh skill install corticalstack/flow                                  # interactive picker (recommended)
+gh skill install corticalstack/flow .claude/skills/create-plan       # one specific skill
+```
+
+Then drop in an `AGENTS.md` (see [docs/AGENTS.md.template](docs/AGENTS.md.template)) and configure `.claude/tracker.json` (see [.claude/tracker.example.json](.claude/tracker.example.json)).
+
+### Cloned repo (template-style, alternative)
+
+If you want the entire repo - including the optional Ralph autonomous-loop scripts under `scripts/` and worked examples:
+
+```
+gh repo create my-project --template corticalstack/flow
+```
+
+See [docs/TEMPLATE_INSTRUCTIONS.md](docs/TEMPLATE_INSTRUCTIONS.md) for post-clone setup.
+
+## What you get
+
+**Workflow skills (12):**
+
+- `/flow:research-requirements`, `/flow:research-codebase` - structured research phase
+- `/flow:create-plan`, `/flow:iterate-plan` - implementation planning
+- `/flow:implement-plan`, `/flow:validate-plan` - execution + quality gate
+- `/flow:commit`, `/flow:autonomous-commit` - commit hygiene
+- `/flow:describe-pr`, `/flow:handle-pr-feedback` - PR description + review-feedback loop
+- `/flow:create-handoff`, `/flow:resume-handoff` - cross-session continuity
+
+**Optional cross-vendor review:**
+
+- `/flow:cross-review` - a configurable OAuth-only review against Azure AI Foundry, GitHub Models, or GitHub Copilot CLI. A model from a different vendor reads the diff vs `main` and surfaces high/critical findings - advisory only, never edits code. See [docs/cross-vendor-review.md](docs/cross-vendor-review.md).
+
+**Tracker abstraction:**
+
+- `bin/tracker` (PATH-wrapper) + `.claude/scripts/tracker.sh` (the adapter)
+- `github` backend wired (uses `gh`); `azure-devops` backend stub; `none` for tracker-less projects
+- Configurable per-project via `.claude/tracker.json`. See [docs/tracker-portability.md](docs/tracker-portability.md).
+
+**Bootstrap helper:**
+
+- `/flow:init` - creates `AGENTS.md`, `.claude/tracker.json`, and optional `cross-review/profiles.json` from templates.
+
+## Workflow overview
+
+```
+/flow:research-requirements
+       ↓
+/flow:create-plan
+       ↓
+/flow:implement-plan        ←─── iterate per phase
+       ↓
+/flow:validate-plan          (quality gate)
+       ↓
+/flow:cross-review           (optional, advisory)
+       ↓
+/flow:commit
+       ↓
+Push  &  PR
+       ↓
+/flow:describe-pr
+       ↓
+Review (human or @claude)
+       ↓
+/flow:handle-pr-feedback     (if changes requested)
+       ↓
+Merge
+```
+
+Each stage drops a durable markdown artifact under `flow/research/`, `flow/plans/`, `flow/prs/`, or `flow/reviews/`, so the next agent (or future you) can pick up cleanly.
+
+## Docs
+
+- [docs/tracker-portability.md](docs/tracker-portability.md) - the tracker adapter contract, neutral state vocabulary, supported backends.
+- [docs/cross-vendor-review.md](docs/cross-vendor-review.md) - `/flow:cross-review` setup, backends, caveats.
+- [docs/AGENTS.md.template](docs/AGENTS.md.template) - the `AGENTS.md` `/flow:init` ships.
+- [docs/TEMPLATE_INSTRUCTIONS.md](docs/TEMPLATE_INSTRUCTIONS.md) - for the cloned-repo path.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
+MIT - see [LICENSE](LICENSE).
 
 ## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
----
-
-**Remember**: This README is a template placeholder. Replace it with documentation specific to your project after completing setup!
+See [CONTRIBUTING.md](CONTRIBUTING.md).
