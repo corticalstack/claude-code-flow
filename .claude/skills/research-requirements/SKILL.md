@@ -40,8 +40,8 @@ Then wait for user input.
 ### Step 1: Parse Input Source
 
 - If a tracker URL or work-item id was provided:
-  - Fetch the work-item content: `bash .claude/scripts/tracker.sh view <id> --json title,body,state,comments`
-  - Transition state: `bash .claude/scripts/tracker.sh set-state <id> research-in-progress`
+  - Fetch the work-item content: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" view <id> --json title,body,state,comments`
+  - Transition state: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" set-state <id> research-in-progress`
 - If plain text: use as-is
 - **CRITICAL**: Read/fetch input FULLY before spawning sub-tasks
 
@@ -183,7 +183,7 @@ status: complete
 After writing the document:
 
 1. **Transition the work-item state** (if applicable):
-   - `bash .claude/scripts/tracker.sh set-state <id> research-complete research-in-progress`
+   - `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" set-state <id> research-complete research-in-progress`
 
 2. **Present summary to user**:
 ```

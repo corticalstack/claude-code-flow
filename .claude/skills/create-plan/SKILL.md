@@ -157,8 +157,8 @@ Then wait for the user's input.
 
 1. **Fetch the work item if provided**:
    - If a tracker URL or work-item id is provided:
-     - Fetch it: `bash .claude/scripts/tracker.sh view <id> --json title,body,state,comments`
-     - Transition state: `bash .claude/scripts/tracker.sh set-state <id> planning-in-progress research-complete`
+     - Fetch it: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" view <id> --json title,body,state,comments`
+     - Transition state: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" set-state <id> planning-in-progress research-complete`
    - Read the content fully before proceeding
    - Note any linked work items, PRs, or references mentioned
 
@@ -440,7 +440,7 @@ After structure approval:
 3. **Continue refining** until the user is satisfied
 
 4. **Transition the work-item state** (if applicable):
-   - Once the plan is finalized and approved: `bash .claude/scripts/tracker.sh set-state <id> ready-for-dev planning-in-progress`
+   - Once the plan is finalized and approved: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" set-state <id> ready-for-dev planning-in-progress`
 
 ## Important Guidelines
 
@@ -586,7 +586,7 @@ tasks = [
 User: /create-plan #1
 Assistant: Let me fetch that work item and understand what we're building...
 
-[Fetches with `bash .claude/scripts/tracker.sh view 1`]
+[Fetches with `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" view 1`]
 
 Based on the work item, I understand we need to create a /research-requirements skill for greenfield projects. Let me research the codebase to understand the existing patterns...
 
