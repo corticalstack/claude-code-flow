@@ -25,7 +25,7 @@ You are tasked with handling feedback from @claude's PR review. This command fet
 - Use the provided PR number
 
 **If no PR number provided:**
-- Auto-detect from current branch: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-current --json number,title,headRefName 2>/dev/null`
+- Auto-detect from current branch: `tracker pr-current --json number,title,headRefName 2>/dev/null`
 - If multiple PRs or unclear, ask user which PR to handle
 
 ### 2. Fetch PR Review Feedback
@@ -33,10 +33,10 @@ You are tasked with handling feedback from @claude's PR review. This command fet
 ```bash
 # Get PR reviews + comments. The author.login filter for "claude-code[bot]" / "@claude"
 # is GitHub-Actions-specific; substitute for other trackers / review systems.
-bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-view <pr-id> --json reviews,comments | jq '.reviews[] | select(.author.login == "claude-code[bot]" or .body | contains("@claude"))'
+tracker pr-view <pr-id> --json reviews,comments | jq '.reviews[] | select(.author.login == "claude-code[bot]" or .body | contains("@claude"))'
 
 # Also get inline review comments
-bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-review-comments <pr-id>
+tracker pr-review-comments <pr-id>
 ```
 
 **Parse the feedback:**
@@ -46,7 +46,7 @@ bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-review-comments <pr-id>
 - Extract specific file locations and suggested fixes
 
 **If no feedback found:**
-- Check if review is still pending: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-decision <pr-id>`
+- Check if review is still pending: `tracker pr-decision <pr-id>`
 - If APPROVED: notify user "PR already approved, no changes needed"
 - If CHANGES_REQUESTED but no comments: ask user to specify what to fix
 - If pending: notify user to wait for review to complete
@@ -56,16 +56,16 @@ bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-review-comments <pr-id>
 ```bash
 # Look for plan file related to this PR
 # Strategy 1: Check PR description for plan reference
-bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-view <pr-id> --json body | grep -o "flow/plans/[^)]*"
+tracker pr-view <pr-id> --json body | grep -o "flow/plans/[^)]*"
 
 # Strategy 2: Get work-item id from PR title/body
-bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-view <pr-id> --json title,body | grep -o "#[0-9]*" | head -1
+tracker pr-view <pr-id> --json title,body | grep -o "#[0-9]*" | head -1
 
 # Then find plan (gh-<n> filename prefix is a stable convention regardless of tracker):
 ls flow/plans/*-gh-<work-item-id>-*.md 2>/dev/null
 
 # Strategy 3: Check commits for plan references
-bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-view <pr-id> --json commits | grep -o "flow/plans/[^)]*"
+tracker pr-view <pr-id> --json commits | grep -o "flow/plans/[^)]*"
 ```
 
 **If plan not found:**
@@ -191,7 +191,7 @@ git push
 ```bash
 # Comment on the PR to request re-review (the '@claude' tag triggers the
 # Claude Code GitHub Action; substitute the equivalent for other systems).
-bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-comment <pr-id> "@claude I've addressed your feedback in the latest commit. Please re-review:
+tracker pr-comment <pr-id> "@claude I've addressed your feedback in the latest commit. Please re-review:
 
 Changes made:
 - <change 1>
@@ -204,7 +204,7 @@ All tests passing ✅"
 
 ```bash
 # Get linked work-item ids
-bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-closing-issues <pr-id>
+tracker pr-closing-issues <pr-id>
 
 # Keep work item in 'in-progress' (already there, no change needed)
 ```

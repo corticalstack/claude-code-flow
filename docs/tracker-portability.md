@@ -1,12 +1,12 @@
 # Tracker portability
 
-The workflow skills (`/research-requirements`, `/create-plan`, `/implement-plan`, `/validate-plan`, `/describe-pr`, `/handle-pr-feedback`, etc.) are designed to drive a project from "issue / work item" through "merged PR / merge request", updating tracker state at each stage. Different teams use different trackers (GitHub Issues, Azure DevOps work items, GitLab issues, Jira, or nothing at all), so the skills do not call any tracker's CLI directly. They call a thin adapter at [.claude/scripts/tracker.sh](../.claude/scripts/tracker.sh), which dispatches to whichever backend you've configured.
+The workflow skills (`/research-requirements`, `/create-plan`, `/implement-plan`, `/validate-plan`, `/describe-pr`, `/handle-pr-feedback`, etc.) are designed to drive a project from "issue / work item" through "merged PR / merge request", updating tracker state at each stage. Different teams use different trackers (GitHub Issues, Azure DevOps work items, GitLab issues, Jira, or nothing at all), so the skills do not call any tracker's CLI directly. They call `tracker` - a thin wrapper the plugin puts on the Bash tool's PATH - which dispatches through the adapter at [.claude/scripts/tracker.sh](../.claude/scripts/tracker.sh) to whichever backend you've configured.
 
 This file explains the contract, the supported backends, the neutral workflow-state vocabulary, and how to configure a project.
 
 ## The contract
 
-The adapter exposes a small set of subcommands - the contract every backend must satisfy. Skills call them as `bash .claude/scripts/tracker.sh <subcommand> <args>`.
+The adapter exposes a small set of subcommands - the contract every backend must satisfy. Skills call them as `tracker <subcommand> <args>` - the plugin adds `bin/tracker` (a thin wrapper around the adapter) to the Bash tool's PATH.
 
 ### Issue / work-item subcommands
 
@@ -106,7 +106,7 @@ Skills work without a tracker. Mutating calls are no-ops (logged); query calls r
 3. Override per-invocation via env var if you want a one-off:
 
    ```bash
-   TRACKER_BACKEND=none bash .claude/scripts/tracker.sh view 1
+   TRACKER_BACKEND=none tracker view 1
    ```
 
 ## What is NOT in scope here

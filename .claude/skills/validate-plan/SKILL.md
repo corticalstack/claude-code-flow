@@ -136,7 +136,7 @@ Based on validation results:
 
 **If validation fails** (automated checks fail, critical issues found):
 ```bash
-bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" set-state <id> validation-failed in-progress
+tracker set-state <id> validation-failed in-progress
 ```
 
 **If validation passes** (all automated checks pass, ready for PR):
