@@ -1,5 +1,6 @@
 {
   "name": "flow",
+  "description": "Flow: a cross-tool agentic-coding workflow toolkit (research, plan, implement, validate) with a tracker abstraction.",
   "owner": {
     "name": "corticalstack"
   },
@@ -7,7 +8,7 @@
     {
       "name": "flow",
       "source": ".",
-      "description": "A cross-tool agentic-coding workflow toolkit (12 workflow skills + optional cross-vendor review + tracker abstraction)."
+      "description": "A cross-tool agentic-coding workflow toolkit (12 workflow skills + optional cross-vendor review + LLM-as-judge + tracker abstraction)."
     }
   ]
 }
