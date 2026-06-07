@@ -132,7 +132,7 @@ Then wait for the user's research query.
      ## Detailed Findings
 
      ### [Component/Area 1]
-     - Description of what exists ([file.ext:line](link))
+     - Description of what exists ([file.ext:line](https://github.com/{owner}/{repo}/blob/{commit}/file.ext#L{line}))
      - How it connects to other components
      - Current implementation details (without evaluation)
 
@@ -140,8 +140,8 @@ Then wait for the user's research query.
      ...
 
      ## Code References
-     - `path/to/file.py:123` - Description of what's there
-     - `another/file.ts:45-67` - Description of the code block
+     - [path/to/file.py:123](https://github.com/{owner}/{repo}/blob/{commit}/path/to/file.py#L123) - Description of what's there
+     - [another/file.ts:45-67](https://github.com/{owner}/{repo}/blob/{commit}/another/file.ts#L45-L67) - Description of the code block
 
      ## Architecture Documentation
      [Current patterns, conventions, and design implementations found in the codebase]
@@ -162,7 +162,8 @@ Then wait for the user's research query.
    - Check if on main branch or if commit is pushed: `git branch --show-current` and `git status`
    - For GitHub, get repo info: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" repo-info` and form permalinks: `https://github.com/{owner}/{repo}/blob/{commit}/{file}#L{line}`
    - For other hosts, substitute the appropriate URL shape (e.g. Azure DevOps: `https://dev.azure.com/{org}/{project}/_git/{repo}?path=/{file}&version=GC{commit}&line={line}`)
-   - Replace local file references with permalinks in the document
+   - **Every `path:line` reference in the document body MUST be its own clickable markdown link** - `[path:line](permalink)`, with ranges as `#L{start}-L{end}` - across Detailed Findings, the Code References section, and any tables. Do NOT leave bare `path:line` text, and do NOT just state a single "permalink base" at the top and leave the references plain; render each reference individually.
+   - Use the full commit permalink when the commit is pushed; if the branch/commit is not pushed, fall back to a repo-relative link `[path:line](path)` so every reference stays navigable.
 
 8. **Present findings:**
    - Transition the work-item state (if applicable): `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" set-state <id> research-complete research-in-progress`
