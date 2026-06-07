@@ -2,9 +2,9 @@
 # Tracker adapter: abstracts issue / work-item and PR operations across trackers.
 #
 # Workflow skills call this script instead of using a specific tracker's CLI
-# directly. Today the only fully wired backend is `github` (which dispatches
-# to `gh`). The `azure-devops` backend is a stub returning a clear error;
-# the `none` backend is a tracker-less mode for projects without an issue tracker.
+# directly. Two backends are fully wired: `github` (dispatches to `gh`) and
+# `azure-devops` (dispatches to `az` with the azure-devops extension). The
+# `none` backend is a tracker-less mode for projects without an issue tracker.
 #
 # Usage:  bash .claude/scripts/tracker.sh <subcommand> <args...>
 #
