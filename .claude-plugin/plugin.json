@@ -19,5 +19,5 @@
     "agent-skills",
     "agents-md"
   ],
-  "skills": ".claude/skills/"
+  "skills": "./.claude/skills/"
 }
