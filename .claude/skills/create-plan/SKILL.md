@@ -314,7 +314,7 @@ After structure approval:
 [A Specification of the desired end state after this plan is complete, and how to verify it]
 
 ### Key Discoveries:
-- [Important finding with file:line reference]
+- [Important finding as a navigable link, e.g. [main.tf:42](https://github.com/{owner}/{repo}/blob/{commit}/path/to/main.tf#L42)]
 - [Pattern to follow]
 - [Constraint to work within]
 
@@ -413,9 +413,11 @@ After structure approval:
 ## References
 
 - Tracker work item: https://github.com/[owner]/[repo]/issues/[number] (GitHub example - substitute the URL shape for your tracker)
-- Related research: `flow/research/[relevant].md`
-- Similar implementation: `[file:line]`
+- Related research: [flow/research/[relevant].md](flow/research/[relevant].md)
+- Similar implementation: [path/to/file:line](https://github.com/{owner}/{repo}/blob/{commit}/path/to/file#L{line})
 ````
+
+3. **Render every code reference as a navigable markdown link.** Do not write bare `file:line` text. Gather the repo + commit once (`git rev-parse HEAD`, `git branch --show-current`, `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" repo-info`) and form `[path:line](https://github.com/{owner}/{repo}/blob/{commit}/{path}#L{line})` (ranges as `#L{start}-L{end}`) for every reference across Current State Analysis, Key Discoveries, the implementation phases, and References. If the commit is not pushed, fall back to a repo-relative link `[path:line](path)` so every reference stays navigable. For non-GitHub trackers, substitute the host's blob-URL shape.
 
 ### Step 5: Review
 
