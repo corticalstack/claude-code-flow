@@ -368,7 +368,6 @@ strictness: "balanced"
 
 This skill integrates with:
 
-- **context-fundamentals** - Evaluation prompts require effective context structure
 - **tool-design** - Evaluation tools need proper schemas and error handling
 - **context-optimization** - Evaluation prompts can be optimized for token efficiency
 - **evaluation** (foundational) - This skill extends the foundational evaluation concepts
@@ -389,7 +388,6 @@ External research:
 
 Related skills in this collection:
 - evaluation - Foundational evaluation concepts
-- context-fundamentals - Context structure for evaluation prompts
 - tool-design - Building evaluation tools
 
 ---

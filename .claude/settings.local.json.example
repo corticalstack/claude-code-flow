@@ -158,15 +158,6 @@
       "Bash(gh api:*)",
       "Bash(for f:*)",
       "Bash(do echo:*)",
-      "Bash(base64 -d gh api repos/Jeffallan/claude-skills/contents/skills/terraform-engineer/references/module-patterns.md --jq .content)",
-      "Bash(base64 -d gh api repos/Jeffallan/claude-skills/contents/skills/terraform-engineer/references/providers.md --jq .content)",
-      "Bash(base64 -d gh api repos/Jeffallan/claude-skills/contents/skills/terraform-engineer/references/state-management.md --jq .content)",
-      "Bash(base64 -d gh api repos/Jeffallan/claude-skills/contents/skills/terraform-engineer/references/testing.md --jq .content)",
-      "Bash(cp /tmp/tf_best_practices.md /home/jp/developments/jp/personal/flow/.claude/skills/terraform-engineer/references/best-practices.md)",
-      "Bash(cp /tmp/tf_module_patterns.md /home/jp/developments/jp/personal/flow/.claude/skills/terraform-engineer/references/module-patterns.md)",
-      "Bash(cp /tmp/tf_providers.md /home/jp/developments/jp/personal/flow/.claude/skills/terraform-engineer/references/providers.md)",
-      "Bash(cp /tmp/tf_state_management.md /home/jp/developments/jp/personal/flow/.claude/skills/terraform-engineer/references/state-management.md)",
-      "Bash(cp /tmp/tf_testing.md /home/jp/developments/jp/personal/flow/.claude/skills/terraform-engineer/references/testing.md)",
       "Bash(for pr:*)",
       "Bash(git commit:*)"
     ]
