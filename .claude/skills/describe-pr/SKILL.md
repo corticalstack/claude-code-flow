@@ -16,8 +16,8 @@ You are tasked with generating a comprehensive pull request description followin
    - Read the template carefully to understand all sections and requirements
 
 2. **Identify the PR to describe:**
-   - Check if the current branch has an associated PR: `bash .claude/scripts/tracker.sh pr-current --json url,number,title,state 2>/dev/null`
-   - If no PR exists for the current branch, or if on main/master, list open PRs: `bash .claude/scripts/tracker.sh pr-list-open`
+   - Check if the current branch has an associated PR: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-current --json url,number,title,state 2>/dev/null`
+   - If no PR exists for the current branch, or if on main/master, list open PRs: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-list-open`
    - Ask the user which PR they want to describe
 
 3. **Check for existing description:**
@@ -26,11 +26,11 @@ You are tasked with generating a comprehensive pull request description followin
    - Consider what has changed since the last description was written
 
 4. **Gather comprehensive PR information:**
-   - Get the full PR diff: `bash .claude/scripts/tracker.sh pr-diff {number}`
+   - Get the full PR diff: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-diff {number}`
    - On GitHub: if you get an error about no default remote repository, instruct the user to run `gh repo set-default` and select the appropriate repository
-   - Get commit history: `bash .claude/scripts/tracker.sh pr-view {number} --json commits`
-   - Review the base branch: `bash .claude/scripts/tracker.sh pr-view {number} --json baseRefName`
-   - Get PR metadata: `bash .claude/scripts/tracker.sh pr-view {number} --json url,title,number,state`
+   - Get commit history: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-view {number} --json commits`
+   - Review the base branch: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-view {number} --json baseRefName`
+   - Get PR metadata: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-view {number} --json url,title,number,state`
 
 5. **Analyze the changes thoroughly:** (ultrathink about the code changes, their architectural implications, and potential impacts)
    - Read through the entire diff carefully
@@ -61,13 +61,13 @@ You are tasked with generating a comprehensive pull request description followin
    - Show the user the generated description
 
 9. **Update the PR:**
-   - Update the PR description directly: `bash .claude/scripts/tracker.sh pr-edit-body {number} flow/prs/{number}_description.md`
+   - Update the PR description directly: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-edit-body {number} flow/prs/{number}_description.md`
    - Confirm the update was successful
    - If any verification steps remain unchecked, remind the user to complete them before merging
 
 10. **Transition linked work-item states** (if PR is linked to issues / work items):
-    - Get linked work-item ids: `bash .claude/scripts/tracker.sh pr-closing-issues {number}`
-    - For each linked work item: `bash .claude/scripts/tracker.sh set-state <id> pr-submitted in-progress`
+    - Get linked work-item ids: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" pr-closing-issues {number}`
+    - For each linked work item: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" set-state <id> pr-submitted in-progress`
 
 ## Important notes:
 - This command works across different repositories - always read the local template
