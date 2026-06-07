@@ -32,8 +32,8 @@ Then wait for the user's research query.
 
 1. **Read any directly mentioned files first:**
    - If the research query is a tracker URL or work-item id:
-     - Fetch work-item content: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" view <id> --json title,body,state,comments`
-     - Transition state: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" set-state <id> research-in-progress`
+     - Fetch work-item content: `tracker view <id> --json title,body,state,comments`
+     - Transition state: `tracker set-state <id> research-in-progress`
    - If the user mentions specific files (tickets, docs, JSON), read them FULLY first
    - **IMPORTANT**: Use the Read tool WITHOUT limit/offset parameters to read entire files
    - **CRITICAL**: Read these files yourself in the main context before spawning any sub-tasks
@@ -160,13 +160,13 @@ Then wait for the user's research query.
 
 7. **Add repository permalinks (if applicable; GitHub URL shape shown - substitute for other hosts):**
    - Check if on main branch or if commit is pushed: `git branch --show-current` and `git status`
-   - For GitHub, get repo info: `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" repo-info` and form permalinks: `https://github.com/{owner}/{repo}/blob/{commit}/{file}#L{line}`
+   - For GitHub, get repo info: `tracker repo-info` and form permalinks: `https://github.com/{owner}/{repo}/blob/{commit}/{file}#L{line}`
    - For other hosts, substitute the appropriate URL shape (e.g. Azure DevOps: `https://dev.azure.com/{org}/{project}/_git/{repo}?path=/{file}&version=GC{commit}&line={line}`)
    - **Every `path:line` reference in the document body MUST be its own clickable markdown link** - `[path:line](permalink)`, with ranges as `#L{start}-L{end}` - across Detailed Findings, the Code References section, and any tables. Do NOT leave bare `path:line` text, and do NOT just state a single "permalink base" at the top and leave the references plain; render each reference individually.
    - Use the full commit permalink when the commit is pushed; if the branch/commit is not pushed, fall back to a repo-relative link `[path:line](path)` so every reference stays navigable.
 
 8. **Present findings:**
-   - Transition the work-item state (if applicable): `bash "${CLAUDE_SKILL_DIR}/../../scripts/tracker.sh" set-state <id> research-complete research-in-progress`
+   - Transition the work-item state (if applicable): `tracker set-state <id> research-complete research-in-progress`
    - Present a concise summary of findings to the user
    - Include key file references for easy navigation
    - Ask if they have follow-up questions or need clarification
