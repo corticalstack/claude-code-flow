@@ -34,12 +34,21 @@ Check if `${CLAUDE_PROJECT_DIR}/.claude/tracker.json` exists.
   - Build the project's `.claude/tracker.json` with `"tracker": "<user-choice>"` and the corresponding backend block populated as much as you can from the example (keep the other backend blocks as inert reference - the adapter only reads the active one).
   - Create the `${CLAUDE_PROJECT_DIR}/.claude/` directory if it does not exist, then write the file.
   - Then per backend:
-    - `github`: tell the user to confirm `gh auth login` is done.
+    - `github`: tell the user to confirm `gh auth login` is done, then offer the label step below.
     - `azure-devops`: warn that the backend is currently a stub (PR 2 pending) - tag / state-transition writes will not yet happen.
     - `none`: tell the user nothing more is needed; mutating tracker calls become no-ops, queries return empty JSON.
 
 - **If it DOES exist:**
   - Tell the user: *".claude/tracker.json already exists; leaving it alone. If you want to change backend, edit it directly - see `${CLAUDE_PLUGIN_ROOT}/.claude/tracker.example.json` for the schema."*
+  - Read it to determine the active backend - the label step below still applies if it is `github`.
+
+### 2a. Workflow-state labels (github backend only)
+
+Only run this when the active backend is `github`. Skip it entirely for `azure-devops` (state tags are free-form, created on first transition) and `none`.
+
+- Ask the user: *"Create the 8 workflow-state labels in this repo now? This writes to the GitHub repo, so `gh auth login` must already be done. (yes / no)"*
+- If **yes**, run `bash ${CLAUDE_PROJECT_DIR}/.claude/scripts/tracker.sh setup-labels`. The command is idempotent (`gh label create --force`), so re-running is safe. If it fails (e.g. `gh` not authenticated), print the exact error and tell the user to run `gh auth login` and re-run the command - do not run the auth flow yourself.
+- If **no**, tell the user they can create them later with `bash .claude/scripts/tracker.sh setup-labels`.
 
 ### 3. Cross-vendor review (optional)
 
