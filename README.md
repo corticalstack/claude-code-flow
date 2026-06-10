@@ -1,8 +1,7 @@
 # Flow
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/corticalstack/flow?include_prereleases&sort=semver)](https://github.com/corticalstack/flow/releases)
-[![Last commit](https://img.shields.io/github/last-commit/corticalstack/flow)](https://github.com/corticalstack/flow/commits)
+[![Release](https://img.shields.io/badge/release-v0.1.8-blue)](https://github.com/corticalstack/flow/releases)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-D97757?logo=anthropic&logoColor=white)](https://docs.claude.com/en/docs/claude-code)
 [![GitHub Copilot CLI](https://img.shields.io/badge/GitHub%20Copilot-CLI-000000?logo=githubcopilot&logoColor=white)](https://github.com/features/copilot)
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-open%20standard-6E56CF)](https://agentskills.io/specification)
