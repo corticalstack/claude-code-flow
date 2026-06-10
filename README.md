@@ -1,6 +1,33 @@
 # Flow
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/corticalstack/flow?include_prereleases&sort=semver)](https://github.com/corticalstack/flow/releases)
+[![Last commit](https://img.shields.io/github/last-commit/corticalstack/flow)](https://github.com/corticalstack/flow/commits)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-D97757?logo=anthropic&logoColor=white)](https://docs.claude.com/en/docs/claude-code)
+[![GitHub Copilot CLI](https://img.shields.io/badge/GitHub%20Copilot-CLI-000000?logo=githubcopilot&logoColor=white)](https://github.com/features/copilot)
+[![Agent Skills](https://img.shields.io/badge/Agent%20Skills-open%20standard-6E56CF)](https://agentskills.io/specification)
+[![Agentic engineering](https://img.shields.io/badge/agentic-engineering-2EA043)](#why-flow)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+<p align="center">
+  <img src="process-flow.gif" alt="Flow in motion: research, plan, implement, validate" width="840">
+</p>
+
 A cross-tool agentic-coding workflow toolkit: 11 workflow skills (research → plan → implement → validate → review → ship), an optional cross-vendor code-review skill, and a tracker abstraction (GitHub Issues, Azure DevOps work items, GitLab issues, …) - all behind the [Agent Skills open standard](https://agentskills.io/specification) so the same files work in Claude Code and GitHub Copilot CLI.
+
+## Contents
+
+- [Why Flow](#why-flow)
+- [Install](#install)
+- [What you get](#what-you-get)
+- [Workflow overview](#workflow-overview)
+- [Docs](#docs)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Why Flow
+
+Most agent failures are context failures: one mega-prompt tries to research, design, and code all at once, and quality degrades as the window fills. Flow stages the work - research, plan, implement, validate - and resets context between stages, so each step starts focused and leaves a durable artifact under `flow/` for review. The same skills run in Claude Code and GitHub Copilot CLI, against GitHub Issues or Azure DevOps, with human checkpoints at the highest-leverage moments: the research and plan boundaries.
 
 ## Install
 
