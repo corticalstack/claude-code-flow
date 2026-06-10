@@ -12,12 +12,6 @@
 # Tracker config (user-specific; may identify private orgs / projects)
 .claude/tracker.json
 
-# Ralph runtime state
-.ralph/
-
-# Ralph logs
-logs/
-
 # Local research / implementation tracker (working doc, intentionally not committed)
 flow/research/2026-05-21-agentic-coding-state-of-the-art.md
 

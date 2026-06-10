@@ -4,7 +4,7 @@ Project instructions for any AI coding agent (Claude Code, OpenAI Codex, GitHub 
 
 ## Project overview
 
-A template repository for an advanced, staged agentic-coding workflow: research, then plan, then implement, then validate, resetting context between stages. See [README.md](README.md) and [docs/claude-code-workflow-concepts.md](docs/claude-code-workflow-concepts.md).
+A cross-tool plugin for an advanced, staged agentic-coding workflow: research, then plan, then implement, then validate, resetting context between stages. See [README.md](README.md).
 
 ## Critical: feature-branch requirement
 
@@ -92,5 +92,5 @@ How each backend stores the state:
 ## Build and test commands
 
 ```bash
-# No build/test commands yet - this is a template repository.
+# No build/test commands - markdown skills plus a shell tracker adapter.
 ```

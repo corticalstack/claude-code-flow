@@ -1,6 +1,6 @@
 # Flow
 
-A cross-tool agentic-coding workflow toolkit: 12 workflow skills (research → plan → implement → validate → review → ship), an optional cross-vendor code-review skill, and a tracker abstraction (GitHub Issues, Azure DevOps work items, GitLab issues, …) - all behind the [Agent Skills open standard](https://agentskills.io/specification) so the same files work in Claude Code and GitHub Copilot CLI.
+A cross-tool agentic-coding workflow toolkit: 11 workflow skills (research → plan → implement → validate → review → ship), an optional cross-vendor code-review skill, and a tracker abstraction (GitHub Issues, Azure DevOps work items, GitLab issues, …) - all behind the [Agent Skills open standard](https://agentskills.io/specification) so the same files work in Claude Code and GitHub Copilot CLI.
 
 ## Install
 
@@ -23,24 +23,14 @@ gh skill install corticalstack/flow .claude/skills/create-plan       # one speci
 
 Then drop in an `AGENTS.md` (see [docs/AGENTS.md.template](docs/AGENTS.md.template)) and configure `.claude/tracker.json` (see [.claude/tracker.example.json](.claude/tracker.example.json)).
 
-### Cloned repo (template-style, alternative)
-
-If you want the entire repo - including the optional Ralph autonomous-loop scripts under `scripts/` and worked examples:
-
-```
-gh repo create my-project --template corticalstack/flow
-```
-
-See [docs/TEMPLATE_INSTRUCTIONS.md](docs/TEMPLATE_INSTRUCTIONS.md) for post-clone setup.
-
 ## What you get
 
-**Workflow skills (12):**
+**Workflow skills (11):**
 
 - `/flow:research-requirements`, `/flow:research-codebase` - structured research phase
 - `/flow:create-plan`, `/flow:iterate-plan` - implementation planning
 - `/flow:implement-plan`, `/flow:validate-plan` - execution + quality gate
-- `/flow:commit`, `/flow:autonomous-commit` - commit hygiene
+- `/flow:commit` - commit hygiene
 - `/flow:describe-pr`, `/flow:handle-pr-feedback` - PR description + review-feedback loop
 - `/flow:create-handoff`, `/flow:resume-handoff` - cross-session continuity
 
@@ -91,7 +81,6 @@ Each stage drops a durable markdown artifact under `flow/research/`, `flow/plans
 - [docs/tracker-portability.md](docs/tracker-portability.md) - the tracker adapter contract, neutral state vocabulary, supported backends.
 - [docs/cross-vendor-review.md](docs/cross-vendor-review.md) - `/flow:cross-review` setup, backends, caveats.
 - [docs/AGENTS.md.template](docs/AGENTS.md.template) - the `AGENTS.md` `/flow:init` ships.
-- [docs/TEMPLATE_INSTRUCTIONS.md](docs/TEMPLATE_INSTRUCTIONS.md) - for the cloned-repo path.
 
 ## License
 

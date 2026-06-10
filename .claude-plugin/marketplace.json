@@ -8,7 +8,7 @@
     {
       "name": "flow",
       "source": ".",
-      "description": "A cross-tool agentic-coding workflow toolkit (12 workflow skills + optional cross-vendor review + LLM-as-judge + tracker abstraction)."
+      "description": "A cross-tool agentic-coding workflow toolkit (11 workflow skills + optional cross-vendor review + LLM-as-judge + tracker abstraction)."
     }
   ]
 }
