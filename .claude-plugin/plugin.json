@@ -1,8 +1,8 @@
 {
   "name": "flow",
   "displayName": "Flow",
-  "version": "0.1.7",
-  "description": "A cross-tool agentic-coding workflow toolkit: 12 workflow skills (research / plan / implement / validate / commit / describe-pr / handle-pr-feedback / handoffs), an optional cross-vendor code-review skill, an LLM-as-judge evaluation skill, and a tracker abstraction (GitHub Issues, Azure DevOps work items, ...). Built on the Agent Skills open standard so the same files work in Claude Code and GitHub Copilot CLI.",
+  "version": "0.1.8",
+  "description": "A cross-tool agentic-coding workflow toolkit: 11 workflow skills (research / plan / implement / validate / commit / describe-pr / handle-pr-feedback / handoffs), an optional cross-vendor code-review skill, an LLM-as-judge evaluation skill, and a tracker abstraction (GitHub Issues, Azure DevOps work items, ...). Built on the Agent Skills open standard so the same files work in Claude Code and GitHub Copilot CLI.",
   "author": {
     "name": "corticalstack"
   },
