@@ -230,5 +230,4 @@ Please review the research document. Once you've resolved any open questions, yo
 ## References
 
 - Pattern reference: [`.claude/skills/research-codebase/SKILL.md`](.claude/skills/research-codebase/SKILL.md)
-- Workflow concepts: [`docs/claude-code-workflow-concepts.md`](docs/claude-code-workflow-concepts.md)
 - Output directory: `flow/research/`
