@@ -27,7 +27,7 @@ A cross-tool agentic-coding workflow toolkit: 11 workflow skills (research → p
 
 ## Why Flow
 
-Most agent failures are context failures: one mega-prompt tries to research, design, and code all at once, and quality degrades as the window fills. Flow stages the work - research, plan, implement, validate - and resets context between stages, so each step starts focused and leaves a durable artifact under `flow/` for review. The same skills run in Claude Code and GitHub Copilot CLI, against GitHub Issues or Azure DevOps, with human checkpoints at the highest-leverage moments: the research and plan boundaries.
+Many agent failures are context failures: one mega-prompt tries to research, design, and code all at once, and quality degrades as the window fills (context rot). Flow stages the work - research, plan, implement, validate - and resets context between stages, so each step starts focused and leaves a durable artifact under `flow/` for review. The same skills run in Claude Code and GitHub Copilot CLI, against GitHub Issues or Azure DevOps, with human checkpoints at the highest-leverage moments: the research and plan boundaries.
 
 ## Install
 
