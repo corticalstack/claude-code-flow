@@ -319,6 +319,12 @@ Labels track issue state through the workflow. Both manual commands (`/research-
 
 #### Creating the Labels
 
+**Recommended: via Flow init / the tracker adapter.** `flow:init` offers to create the 8 core workflow-state labels for you (github backend only). To create them at any time, run the idempotent adapter subcommand, which is the single source of truth for the core label names/colors:
+```bash
+bash .claude/scripts/tracker.sh setup-labels
+```
+This covers the 8 core states. The Ralph-only `ralph-exempt` label is not part of the core set - create it with the manual command below if you use Ralph.
+
 **Option 1: Ask Claude to create them**
 ```
 Create the GitHub labels needed for Ralph autonomous workflow:

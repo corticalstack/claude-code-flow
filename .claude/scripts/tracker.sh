@@ -28,6 +28,8 @@
 # Subcommands (utility):
 #   repo-info                                 Owner + repo name as JSON.
 #   backend                                   Print the active backend name.
+#   setup-labels                              Create the 8 workflow-state labels
+#                                             (github only; no-op on other backends).
 #
 # Backend selection: reads `.claude/tracker.json` (gitignored) if present,
 # else `.claude/tracker.example.json`, else defaults to `github`. Override
@@ -123,6 +125,22 @@ gh_pr_review_comments() { gh_require; gh api "repos/:owner/:repo/pulls/$1/commen
 gh_pr_decision()     { gh_require; gh pr view "$1" --json reviewDecision; }
 gh_pr_closing_issues() { gh_require; gh pr view "$1" --json closingIssuesReferences --jq '.closingIssuesReferences[].number'; }
 gh_repo_info()       { gh_require; gh repo view --json owner,name; }
+
+# Create the 8 neutral workflow-state labels (the canonical set in AGENTS.md
+# "Workflow state lifecycle"). Idempotent via --force, so it is safe to re-run.
+# This function is the single source of truth for the label names/colors;
+# docs reference it rather than re-listing the commands.
+gh_setup_labels() {
+  gh_require
+  gh label create "research-in-progress"  --description "Research actively underway"              --color "1d76db" --force
+  gh label create "research-complete"      --description "Research done, ready for planning"       --color "0e8a16" --force
+  gh label create "planning-in-progress"   --description "Plan being created"                      --color "fbca04" --force
+  gh label create "ready-for-dev"          --description "Has implementation plan, ready to build" --color "5319e7" --force
+  gh label create "in-progress"            --description "Development actively underway"           --color "d93f0b" --force
+  gh label create "validation-failed"      --description "Implementation complete but failed validation" --color "d4c5f9" --force
+  gh label create "implementation-failed"  --description "Implementation could not be completed"   --color "b60205" --force
+  gh label create "pr-submitted"           --description "PR created, awaiting review"             --color "c2e0c6" --force
+}
 
 # ----------------------------------------------------------------------------
 # Azure DevOps backend
@@ -326,6 +344,7 @@ case "$BACKEND" in
       pr-decision) gh_pr_decision "$@" ;;
       pr-closing-issues) gh_pr_closing_issues "$@" ;;
       repo-info) gh_repo_info ;;
+      setup-labels) gh_setup_labels ;;
       *) abort "unknown subcommand for github backend: $SUBCMD" 2 ;;
     esac
     ;;
@@ -347,6 +366,7 @@ case "$BACKEND" in
       pr-decision) azdo_pr_decision "$@" ;;
       pr-closing-issues) azdo_pr_closing_issues "$@" ;;
       repo-info) azdo_repo_info ;;
+      setup-labels) echo "INFO: tracker=azure-devops; state tags are free-form and created on first set-state - nothing to pre-create" >&2 ;;
       *) abort "unknown subcommand for azure-devops backend: $SUBCMD" 2 ;;
     esac
     ;;
@@ -356,7 +376,7 @@ case "$BACKEND" in
       backend) echo none ;;
       view|pr-current|pr-view|pr-diff|pr-list-open|pr-reviews|pr-review-comments|pr-decision|pr-closing-issues|repo-info)
         none_query ;;
-      set-state|comment|pr-edit-body|pr-comment)
+      set-state|comment|pr-edit-body|pr-comment|setup-labels)
         none_mutating "$SUBCMD" ;;
       *) abort "unknown subcommand for none backend: $SUBCMD" 2 ;;
     esac
